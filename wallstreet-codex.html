@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Wall Street Codex · 52 Rumus Accounting & Corporate Finance Interaktif</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+:root{
+  --bg:#05080f;
+  --bg2:#070b14;
+  --panel:#0a0f1c;
+  --panel2:#080c16;
+  --border:#192234;
+  --border-soft:#121a29;
+  --text:#dde2ec;
+  --dim:#7a839a;
+  --faint:#4a5268;
+  --amber:#ffb020;
+  --amber-soft:rgba(255,176,32,.12);
+  --cyan:#5ec8d8;
+  --cyan-soft:rgba(94,200,216,.12);
+  --green:#34d399;
+  --red:#ef5d5d;
+  --violet:#a78bfa;
+  --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --sans:'Inter',-apple-system,'Segoe UI',Roboto,sans-serif;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);}
+body{overflow:hidden;}
+::selection{background:var(--amber-soft);color:var(--amber);}
+#app{display:flex;flex-direction:column;height:100vh;}
+
+/* ---- topbar ---- */
+#topbar{display:flex;align-items:center;gap:16px;padding:10px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,var(--bg2),var(--bg));flex-shrink:0;}
+.brand{font-family:var(--mono);font-weight:700;font-size:15px;letter-spacing:.5px;color:var(--text);white-space:nowrap;display:flex;align-items:baseline;gap:2px;}
+.brand .dot{color:var(--amber);}
+.brand span.sub{color:var(--amber);font-weight:700;}
+#hamburger{display:none;background:none;border:1px solid var(--border);color:var(--text);border-radius:8px;width:34px;height:34px;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;}
+.searchwrap{flex:1;max-width:420px;position:relative;}
+.searchwrap input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:8px 12px 8px 30px;border-radius:8px;font-family:var(--sans);font-size:13px;outline:none;transition:border-color .15s;}
+.searchwrap input:focus{border-color:var(--amber);}
+.searchwrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:14px;pointer-events:none;}
+.stat{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;margin-left:auto;letter-spacing:.3px;}
+.stat b{color:var(--amber);}
+
+/* ---- ticker ---- */
+#ticker{height:30px;border-bottom:1px solid var(--border-soft);background:var(--panel2);overflow:hidden;position:relative;flex-shrink:0;}
+#ticker::before,#ticker::after{content:"";position:absolute;top:0;bottom:0;width:40px;z-index:2;pointer-events:none;}
+#ticker::before{left:0;background:linear-gradient(90deg,var(--panel2),transparent);}
+#ticker::after{right:0;background:linear-gradient(-90deg,var(--panel2),transparent);}
+#tickerTrack{display:flex;align-items:center;height:100%;white-space:nowrap;width:max-content;animation:tickerScroll 240s linear infinite;}
+#ticker:hover #tickerTrack{animation-play-state:paused;}
+@keyframes tickerScroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.tick-item{font-family:var(--mono);font-size:11px;color:var(--faint);padding:0 18px;cursor:pointer;border-right:1px solid var(--border-soft);transition:color .15s;}
+.tick-item:hover{color:var(--amber);}
+.tick-item b{color:var(--dim);font-weight:600;}
+.tick-item:hover b{color:var(--amber);}
+
+/* ---- body layout ---- */
+#body{flex:1;display:flex;overflow:hidden;min-height:0;position:relative;}
+#sidebar{width:300px;flex-shrink:0;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg2);}
+#sidebar::-webkit-scrollbar{width:6px;}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.chapter-group{border-bottom:1px solid var(--border-soft);}
+.chapter-head{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;}
+.chapter-head:hover{background:var(--panel);}
+.chapter-head .ch-title{font-size:12px;font-weight:700;color:var(--text);letter-spacing:.3px;}
+.chapter-head .ch-sub{font-size:10.5px;color:var(--faint);margin-top:2px;}
+.chapter-head .ch-count{font-family:var(--mono);font-size:10.5px;color:var(--amber);background:var(--amber-soft);padding:2px 7px;border-radius:20px;flex-shrink:0;margin-left:8px;}
+.chapter-head .chev{color:var(--faint);font-size:11px;margin-left:8px;transition:transform .15s;flex-shrink:0;}
+.chapter-group.collapsed .chev{transform:rotate(-90deg);}
+.chapter-body{overflow:hidden;}
+.chapter-group.collapsed .chapter-body{display:none;}
+.formula-row{display:flex;align-items:baseline;gap:8px;padding:7px 14px 7px 20px;cursor:pointer;border-left:2px solid transparent;transition:background .12s,border-color .12s;}
+.formula-row:hover{background:var(--panel);}
+.formula-row.active{background:var(--panel);border-left-color:var(--amber);}
+.formula-row .yr{font-family:var(--mono);font-size:10.5px;color:var(--faint);flex-shrink:0;width:34px;}
+.formula-row.active .yr{color:var(--amber);}
+.formula-row .nm{font-size:12px;color:var(--dim);line-height:1.3;}
+.formula-row.active .nm{color:var(--text);}
+.formula-row.hidden{display:none;}
+
+#main{flex:1;overflow-y:auto;padding:26px 32px 60px;min-width:0;}
+#main::-webkit-scrollbar{width:8px;}
+#main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+.f-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+.pill{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);color:var(--dim);}
+.pill.ch{color:var(--amber);border-color:var(--amber-soft);background:var(--amber-soft);}
+.f-title{font-size:24px;font-weight:700;letter-spacing:-.2px;margin:0 0 4px;}
+.f-who{font-family:var(--mono);font-size:12px;color:var(--faint);margin-bottom:16px;}
+.f-desc{font-size:13.5px;color:var(--dim);line-height:1.65;max-width:780px;margin-bottom:18px;}
+
+.f-formula-box{background:var(--panel2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 18px;margin-bottom:20px;overflow-x:auto;}
+.f-formula-box .katex{font-size:1.05em;color:var(--text);}
+.f-formula-box .katex .mord,.f-formula-box .katex .mbin,.f-formula-box .katex .mrel{color:var(--text);}
+
+.f-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:18px;margin-bottom:18px;align-items:start;}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+.card h4{margin:0 0 12px;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);font-weight:600;}
+
+.ctrl{margin-bottom:14px;}
+.ctrl:last-child{margin-bottom:0;}
+.ctrl-label{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-bottom:6px;}
+.ctrl-label .val{font-family:var(--mono);color:var(--amber);font-weight:600;}
+input[type=range]{width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;-webkit-appearance:none;accent-color:var(--amber);}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--amber);cursor:pointer;box-shadow:0 0 0 3px rgba(255,176,32,.18);}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:var(--amber);border:none;cursor:pointer;box-shadow:0 0 0 3px rgba(255,176,32,.18);}
+.toggle-wrap{display:flex;background:var(--panel2);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.toggle-wrap button{flex:1;background:none;border:none;color:var(--dim);font-size:12px;padding:7px;cursor:pointer;font-family:var(--sans);transition:.15s;}
+.toggle-wrap button.on{background:var(--amber-soft);color:var(--amber);font-weight:600;}
+
+.readout-big{margin-bottom:14px;}
+.readout-big .lbl{font-size:11px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.readout-big .num{font-family:var(--mono);font-size:34px;font-weight:700;color:var(--amber);text-shadow:0 0 18px rgba(255,176,32,.35);line-height:1.1;letter-spacing:-.5px;}
+.readout-big .num small{font-size:16px;font-weight:600;margin-left:3px;color:var(--amber);opacity:.8;}
+.sub-stats{display:flex;flex-direction:column;gap:7px;margin-top:14px;border-top:1px solid var(--border-soft);padding-top:12px;}
+.sub-stat{display:flex;justify-content:space-between;font-size:12px;}
+.sub-stat .l{color:var(--faint);}
+.sub-stat .v{font-family:var(--mono);color:var(--text);font-weight:600;}
+.note-badge{margin-top:14px;font-size:11.5px;padding:9px 12px;border-radius:8px;line-height:1.5;}
+.note-badge.info{background:var(--cyan-soft);color:var(--cyan);}
+.note-badge.warn{background:rgba(255,176,32,.12);color:var(--amber);}
+.note-badge.danger{background:rgba(239,93,93,.12);color:var(--red);}
+.note-badge.good{background:rgba(52,211,153,.12);color:var(--green);}
+
+.f-chartwrap{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px 10px;}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;}
+.chart-head h4{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);font-weight:600;}
+#chartCanvas{display:block;width:100%;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-soft);}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);font-family:var(--mono);}
+.legend-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.legend-sw.dash{background:none;border-top:2px dashed var(--dim);height:0;width:14px;}
+.randbtn{background:var(--panel2);border:1px solid var(--border);color:var(--amber);font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:7px;cursor:pointer;transition:.15s;white-space:nowrap;}
+.randbtn:hover{background:var(--amber-soft);border-color:var(--amber);}
+.randbtn:active{transform:scale(.96);}
+
+.intro-card{background:linear-gradient(135deg,var(--panel),var(--panel2));border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:20px;font-size:12.5px;color:var(--dim);line-height:1.6;}
+.intro-card b{color:var(--amber);}
+
+@media (max-width:880px){
+  #hamburger{display:flex;}
+  .stat{display:none;}
+  #sidebar{position:absolute;left:0;top:0;bottom:0;z-index:10;transform:translateX(-100%);transition:transform .2s;box-shadow:8px 0 24px rgba(0,0,0,.4);}
+  #sidebar.open{transform:translateX(0);}
+  #body.sb-open::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.4);z-index:5;}
+  #main{padding:18px 16px 50px;}
+  .f-grid{grid-template-columns:1fr;}
+  .f-title{font-size:20px;}
+  .readout-big .num{font-size:28px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="topbar">
+    <button id="hamburger" aria-label="menu">☰</button>
+    <div class="brand">WALL<span class="dot">·</span><span class="sub">ST CODEX</span></div>
+    <div class="searchwrap"><input id="searchInput" placeholder="cari rumus, tahun, atau penulis…" /></div>
+    <div class="stat"><b id="statCount">106</b> rumus · <b>5</b> bab · 1900–2024</div>
+  </header>
+  <div id="ticker"><div id="tickerTrack"></div></div>
+  <div id="body">
+    <nav id="sidebar"></nav>
+    <main id="main"></main>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+/* =========================================================
+   QUANT CODEX — engine inti
+   ========================================================= */
+
+/* ---------- math helpers ---------- */
+function clampNum(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp(a,b,t){return a+(b-a)*t;}
+function easeInOutCubic(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+
+function erf(x){
+  const s=x<0?-1:1; x=Math.abs(x);
+  const a1=0.254829592,a2=-0.284496736,a3=1.421413741,a4=-1.453152027,a5=1.061405429,p=0.3275911;
+  const t=1/(1+p*x);
+  const y=1-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*Math.exp(-x*x);
+  return s*y;
+}
+function ncdf(x){return 0.5*(1+erf(x/Math.SQRT2));}
+function npdf(x){return Math.exp(-x*x/2)/Math.sqrt(2*Math.PI);}
+function invNcdf(p){
+  if(p<=0)return -8; if(p>=1)return 8;
+  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  const plow=0.02425, phigh=1-plow; let q,r;
+  if(p<plow){q=Math.sqrt(-2*Math.log(p));return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);}
+  if(p<=phigh){q=p-0.5;r=q*q;return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);}
+  q=Math.sqrt(-2*Math.log(1-p));
+  return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
+function bsPrice(S,K,r,sigma,T,isCall){
+  if(isCall===undefined)isCall=true;
+  if(T<=0||sigma<=0)return Math.max(isCall?S-K:K-S,0);
+  const d1=(Math.log(S/K)+(r+sigma*sigma/2)*T)/(sigma*Math.sqrt(T));
+  const d2=d1-sigma*Math.sqrt(T);
+  return isCall? S*ncdf(d1)-K*Math.exp(-r*T)*ncdf(d2) : K*Math.exp(-r*T)*ncdf(-d2)-S*ncdf(-d1);
+}
+function bsGreeks(S,K,r,sigma,T){
+  const sqrtT=Math.sqrt(Math.max(T,1e-6));
+  const d1=(Math.log(S/K)+(r+sigma*sigma/2)*T)/(sigma*sqrtT);
+  const d2=d1-sigma*sqrtT;
+  return {
+    delta:ncdf(d1),
+    gamma:npdf(d1)/(S*sigma*sqrtT),
+    vega:S*npdf(d1)*sqrtT/100,
+    theta:(-S*npdf(d1)*sigma/(2*sqrtT)-r*K*Math.exp(-r*T)*ncdf(d2))/365,
+    rho:K*T*Math.exp(-r*T)*ncdf(d2)/100,
+    call:S*ncdf(d1)-K*Math.exp(-r*T)*ncdf(d2)
+  };
+}
+function crrBinomial(S,K,r,sigma,T,n,isCall){
+  if(isCall===undefined)isCall=true;
+  n=isFinite(n)?Math.max(2,Math.round(n)):15;
+  const dt=T/n,u=Math.exp(sigma*Math.sqrt(dt)),d=1/u;
+  const p=clampNum((Math.exp(r*dt)-d)/(u-d),0.001,0.999);
+  let pr=new Array(n+1);
+  for(let i=0;i<=n;i++){const ST=S*Math.pow(u,n-i)*Math.pow(d,i); pr[i]=isCall?Math.max(ST-K,0):Math.max(K-ST,0);}
+  const disc=Math.exp(-r*dt);
+  for(let step=n-1;step>=0;step--){for(let i=0;i<=step;i++){pr[i]=disc*(p*pr[i]+(1-p)*pr[i+1]);}}
+  return pr[0];
+}
+function bivNormCdf(x,y,rho){
+  const n=60,xlo=-8,ylo=-8;
+  const dx=(x-xlo)/n,dy=(y-ylo)/n;
+  const denom=2*Math.PI*Math.sqrt(Math.max(1-rho*rho,1e-6));
+  let sum=0;
+  for(let i=0;i<n;i++){
+    const xi=xlo+dx*(i+0.5);
+    for(let j=0;j<n;j++){
+      const yj=ylo+dy*(j+0.5);
+      const q=(xi*xi-2*rho*xi*yj+yj*yj)/(2*Math.max(1-rho*rho,1e-6));
+      sum+=Math.exp(-q)/denom*dx*dy;
+    }
+  }
+  return clampNum(sum,0,1);
+}
+function mulberry32(seed){
+  let t=seed>>>0;
+  return function(){
+    t+=0x6D2B79F5; let r=t;
+    r=Math.imul(r^(r>>>15),r|1);
+    r^=r+Math.imul(r^(r>>>7),r|61);
+    return ((r^(r>>>14))>>>0)/4294967296;
+  };
+}
+function gaussRNG(rng){let u=0,v=0;while(u===0)u=rng();while(v===0)v=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function sweep(xmin,xmax,n,fn){const pts=[];for(let i=0;i<=n;i++){const x=xmin+(xmax-xmin)*i/n;pts.push({x,y:fn(x)});}return pts;}
+
+/* ---------- formatting ---------- */
+function fmtNum(v,dec){
+  if(v===undefined||v===null||isNaN(v))return '–';
+  dec=dec===undefined?2:dec;
+  const neg=v<0; v=Math.abs(v);
+  let s=v.toFixed(dec);
+  let [int,frac]=s.split('.');
+  int=int.replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  return (neg?'-':'')+int+(frac?'.'+frac:'');
+}
+function fmtAxis(v){
+  const av=Math.abs(v);
+  if(av>=1e9)return (v/1e9).toFixed(1)+'B';
+  if(av>=1e6)return (v/1e6).toFixed(1)+'M';
+  if(av>=1e3)return (v/1e3).toFixed(1)+'k';
+  if(av>=1)return v.toFixed(av>=100?0:1);
+  if(av===0)return '0';
+  return v.toFixed(3);
+}
+function fmtCompact(v){
+  if(v===undefined||v===null||isNaN(v))return '–';
+  const neg=v<0; v=Math.abs(v);
+  let s;
+  if(v>=1e12)s=(v/1e12).toFixed(2)+'T';
+  else if(v>=1e9)s=(v/1e9).toFixed(2)+'B';
+  else if(v>=1e6)s=(v/1e6).toFixed(2)+'M';
+  else if(v>=1e3)s=(v/1e3).toFixed(2)+'K';
+  else s=fmtNum(v,2);
+  return (neg?'-':'')+s;
+}
+
+/* ---------- colors ---------- */
+const COLORS={bg:'#05080f',panel:'#0a0f1c',border:'#192234',borderSoft:'#121a29',text:'#dde2ec',dim:'#7a839a',faint:'#4a5268',
+  amber:'#ffb020',cyan:'#5ec8d8',green:'#34d399',red:'#ef5d5d',violet:'#a78bfa'};
+
+/* ---------- canvas drawing primitives ---------- */
+function roundRectPath(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function interpY(pts,x){
+  if(!pts||!pts.length)return null;
+  if(x<=pts[0].x)return pts[0].y;
+  if(x>=pts[pts.length-1].x)return pts[pts.length-1].y;
+  for(let i=0;i<pts.length-1;i++){
+    if(x>=pts[i].x&&x<=pts[i+1].x){
+      const t=(x-pts[i].x)/((pts[i+1].x-pts[i].x)||1);
+      return lerp(pts[i].y,pts[i+1].y,t);
+    }
+  }
+  return pts[pts.length-1].y;
+}
+const MONOFONT="11px ui-monospace, 'IBM Plex Mono', Menlo, Consolas, monospace";
+
+function drawLine(ctx,w,h,spec){
+  const m={l:48,r:18,t:16,b:30};
+  const pw=Math.max(10,w-m.l-m.r), ph=Math.max(10,h-m.t-m.b);
+  const xMin=spec.xMin,xMax=spec.xMax,yMin=spec.yMin,yMax=spec.yMax;
+  const sx=x=>m.l+(x-xMin)/((xMax-xMin)||1)*pw;
+  const sy=y=>m.t+(1-(y-yMin)/((yMax-yMin)||1))*ph;
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=COLORS.borderSoft; ctx.lineWidth=1; ctx.font=MONOFONT; ctx.fillStyle=COLORS.faint;
+  for(let i=0;i<=4;i++){
+    const yv=yMin+(yMax-yMin)*i/4, yy=sy(yv);
+    ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(w-m.r,yy);ctx.stroke();
+    ctx.fillText(fmtAxis(yv),3,yy+3);
+  }
+  for(let i=0;i<=5;i++){
+    const xv=xMin+(xMax-xMin)*i/5, xx=sx(xv);
+    ctx.fillText(fmtAxis(xv),Math.min(Math.max(xx-12,m.l),w-m.r-22),h-m.b+16);
+  }
+  (spec.hlines||[]).forEach(hl=>{
+    ctx.save();
+    ctx.strokeStyle=hl.color||COLORS.dim; ctx.setLineDash(hl.dash===false?[]:[4,4]); ctx.lineWidth=1.2;
+    const yy=sy(clampNum(hl.y,yMin,yMax));
+    ctx.beginPath();ctx.moveTo(m.l,yy);ctx.lineTo(w-m.r,yy);ctx.stroke();
+    ctx.restore();
+  });
+  (spec.series||[]).forEach(s=>{
+    if(s.fillRange){
+      const pts=s.pts.filter(p=>p.x>=s.fillRange[0]&&p.x<=s.fillRange[1]);
+      if(pts.length>1){
+        ctx.save();ctx.beginPath();
+        ctx.moveTo(sx(pts[0].x),sy(yMin));
+        pts.forEach(p=>ctx.lineTo(sx(p.x),sy(clampNum(p.y,yMin,yMax))));
+        ctx.lineTo(sx(pts[pts.length-1].x),sy(yMin));
+        ctx.closePath(); ctx.fillStyle=(s.color||COLORS.cyan)+'33'; ctx.fill(); ctx.restore();
+      }
+    }
+    if(s.fill){
+      ctx.save();ctx.beginPath();
+      ctx.moveTo(sx(s.pts[0].x),sy(yMin));
+      s.pts.forEach(p=>ctx.lineTo(sx(p.x),sy(clampNum(p.y,yMin,yMax))));
+      ctx.lineTo(sx(s.pts[s.pts.length-1].x),sy(yMin));
+      ctx.closePath(); ctx.fillStyle=(s.color||COLORS.cyan)+'1f'; ctx.fill(); ctx.restore();
+    }
+  });
+  (spec.series||[]).forEach(s=>{
+    ctx.save();
+    ctx.strokeStyle=s.color||COLORS.cyan; ctx.lineWidth=2.2; ctx.lineJoin='round';
+    if(s.dash)ctx.setLineDash([6,4]); else ctx.setLineDash([]);
+    ctx.beginPath();
+    s.pts.forEach((p,i)=>{const X=sx(p.x),Y=sy(clampNum(p.y,yMin,yMax));if(i===0)ctx.moveTo(X,Y);else ctx.lineTo(X,Y);});
+    ctx.stroke(); ctx.restore();
+  });
+  if(spec.vline!=null){
+    const xx=sx(clampNum(spec.vline,xMin,xMax));
+    ctx.save();ctx.strokeStyle=COLORS.amber;ctx.setLineDash([3,3]);ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(xx,m.t);ctx.lineTo(xx,h-m.b);ctx.stroke();ctx.restore();
+    const s0=(spec.series||[])[0];
+    if(s0){
+      const yv=interpY(s0.pts,clampNum(spec.vline,xMin,xMax));
+      if(yv!=null){
+        const Y=sy(clampNum(yv,yMin,yMax));
+        ctx.save();ctx.fillStyle=COLORS.amber;ctx.shadowColor=COLORS.amber;ctx.shadowBlur=9;
+        ctx.beginPath();ctx.arc(xx,Y,4.5,0,Math.PI*2);ctx.fill();ctx.restore();
+      }
+    }
+  }
+  ctx.strokeStyle=COLORS.border;ctx.lineWidth=1;ctx.strokeRect(m.l,m.t,pw,ph);
+}
+function drawGauge(ctx,w,h,spec){
+  ctx.clearRect(0,0,w,h);
+  const barY=h/2-4, barH=20;
+  const x0=20,x1=w-20;
+  const sx=v=>x0+(clampNum(v,spec.min,spec.max)-spec.min)/((spec.max-spec.min)||1)*(x1-x0);
+  (spec.zones||[]).forEach(z=>{
+    const xa=sx(z.from),xb=sx(z.to);
+    ctx.fillStyle=z.color; roundRectPath(ctx,xa,barY,Math.max(1,xb-xa),barH,4); ctx.fill();
+  });
+  ctx.strokeStyle=COLORS.border;ctx.lineWidth=1;roundRectPath(ctx,x0,barY,x1-x0,barH,6);ctx.stroke();
+  ctx.font=MONOFONT;ctx.fillStyle=COLORS.dim;ctx.textAlign='center';
+  (spec.zones||[]).forEach(z=>{
+    const xc=(sx(z.from)+sx(z.to))/2;
+    ctx.fillText(z.label,clampNum(xc,x0+30,x1-30),barY+barH+18);
+  });
+  const xv=sx(spec.value);
+  ctx.save();ctx.strokeStyle=COLORS.text;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(xv,barY-8);ctx.lineTo(xv,barY+barH+8);ctx.stroke();
+  ctx.fillStyle=COLORS.amber;ctx.shadowColor=COLORS.amber;ctx.shadowBlur=10;
+  ctx.beginPath();ctx.moveTo(xv,barY-8);ctx.lineTo(xv-6,barY-18);ctx.lineTo(xv+6,barY-18);ctx.closePath();ctx.fill();
+  ctx.restore();
+  ctx.textAlign='center';ctx.font="bold 13px ui-monospace, 'IBM Plex Mono', Menlo, Consolas, monospace";ctx.fillStyle=COLORS.text;
+  ctx.fillText(fmtNum(spec.value,spec.decimals===undefined?2:spec.decimals)+(spec.unit||''),clampNum(xv,x0+30,x1-30),barY-26);
+  ctx.textAlign='left';
+}
+function drawBars(ctx,w,h,spec){
+  ctx.clearRect(0,0,w,h);
+  const m={l:48,r:18,t:24,b:34};
+  const pw=Math.max(10,w-m.l-m.r), ph=Math.max(10,h-m.t-m.b);
+  const vals=spec.bars.map(b=>b.value);
+  let yMin=Math.min(0,...vals), yMax=Math.max(0,...vals);
+  if(yMin===yMax)yMax=yMin+1;
+  const pad=(yMax-yMin)*0.18||1; yMin-=pad; yMax+=pad;
+  const sy=v=>m.t+(1-(v-yMin)/((yMax-yMin)||1))*ph;
+  const zeroY=sy(0);
+  ctx.strokeStyle=COLORS.borderSoft;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(m.l,zeroY);ctx.lineTo(w-m.r,zeroY);ctx.stroke();
+  const n=spec.bars.length, gap=pw/n, bw=Math.min(gap*0.55,70);
+  ctx.font=MONOFONT;ctx.textAlign='center';
+  spec.bars.forEach((b,i)=>{
+    const xc=m.l+gap*i+gap/2;
+    const y0=zeroY,y1=sy(b.value);
+    const top=Math.min(y0,y1), hgt=Math.max(2,Math.abs(y1-y0));
+    ctx.fillStyle=b.color||COLORS.cyan;
+    roundRectPath(ctx,xc-bw/2,top,bw,hgt,3);ctx.fill();
+    ctx.fillStyle=COLORS.text;
+    ctx.fillText(fmtNum(b.value,spec.decimals===undefined?1:spec.decimals)+(spec.unit||''),xc,(b.value>=0?top-7:top+hgt+15));
+    ctx.fillStyle=COLORS.dim;
+    ctx.fillText(b.label,xc,h-m.b+16);
+  });
+  ctx.strokeStyle=COLORS.border;ctx.strokeRect(m.l,m.t,pw,ph);
+}
+
+function lerpSpec(from,to,e){
+  if(!from||from.mode!==to.mode)from=null;
+  if(to.mode==='gauge'){
+    const fv=from?from.value:to.min;
+    return Object.assign({},to,{value:lerp(fv,to.value,e)});
+  }
+  if(to.mode==='bars'){
+    return Object.assign({},to,{bars:to.bars.map((b,i)=>{
+      const fv=(from&&from.bars&&from.bars[i])?from.bars[i].value:0;
+      return Object.assign({},b,{value:lerp(fv,b.value,e)});
+    })});
+  }
+  return Object.assign({},to,{
+    vline: to.vline==null?to.vline:lerp((from&&from.vline!=null)?from.vline:to.vline,to.vline,e),
+    series: to.series.map((s,si)=>Object.assign({},s,{pts:s.pts.map((p,pi)=>{
+      const fp=(from&&from.series&&from.series[si]&&from.series[si].pts[pi])?from.series[si].pts[pi]:null;
+      return {x:p.x,y: fp? lerp(fp.y,p.y,e) : lerp(to.yMin,p.y,e)};
+    })})),
+    hlines: (to.hlines||[]).map((hl,i)=>{
+      const fh=(from&&from.hlines&&from.hlines[i])?from.hlines[i]:null;
+      return Object.assign({},hl,{y: fh? lerp(fh.y,hl.y,e): hl.y});
+    })
+  });
+}
+
+class QChart{
+  constructor(canvas){
+    this.canvas=canvas; this.ctx=canvas.getContext('2d');
+    this.cur=null; this.raf=null;
+    this._resize();
+    this._ro=new ResizeObserver(()=>this._resize());
+    this._ro.observe(canvas.parentElement);
+  }
+  _resize(){
+    const dpr=window.devicePixelRatio||1;
+    const rect=this.canvas.parentElement.getBoundingClientRect();
+    const hpx= window.innerWidth<=880?220:264;
+    this.w=Math.max(260,rect.width-2); this.h=hpx;
+    this.canvas.width=this.w*dpr; this.canvas.height=this.h*dpr;
+    this.canvas.style.width=this.w+'px'; this.canvas.style.height=this.h+'px';
+    this.ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(this.cur)this._draw(this.cur);
+  }
+  destroy(){ if(this._ro)this._ro.disconnect(); cancelAnimationFrame(this.raf); }
+  _draw(spec){
+    if(spec.mode==='gauge')drawGauge(this.ctx,this.w,this.h,spec);
+    else if(spec.mode==='bars')drawBars(this.ctx,this.w,this.h,spec);
+    else drawLine(this.ctx,this.w,this.h,spec);
+  }
+  set(spec){
+    cancelAnimationFrame(this.raf);
+    const from=this.cur, to=spec;
+    const start=performance.now(); const dur= from?380:680;
+    const step=(now)=>{
+      const k=Math.min(1,(now-start)/dur); const e=easeInOutCubic(k);
+      this._draw(lerpSpec(from,to,e));
+      if(k<1){this.raf=requestAnimationFrame(step);} else {this.cur=to;}
+    };
+    this.raf=requestAnimationFrame(step);
+  }
+}
+
+/* ---------- chapter meta ---------- */
+
+const CHAPTER_META=[
+  {id:1,title:'Financial Statement Analysis',sub:'Rasio, DuPont, Earnings Quality & Working Capital'},
+  {id:2,title:'Fundamental Valuation',sub:'DCF, DDM, Multiples & Residual Income'},
+  {id:3,title:'Credit & Fixed Income',sub:'Bond Pricing, Duration & Credit Risk'},
+  {id:4,title:'Corporate Finance & Capital Structure',sub:'WACC, NPV/IRR, M&A & Capital Budgeting'},
+  {id:5,title:'Equity Research & Markets',sub:'EPS, CAPM, Beta & Trading Multiples'}
+];
+
+/* ---------- formula registry ---------- */
+const FORMULAS=[];
+function addF(arr){FORMULAS.push.apply(FORMULAS,arr);}
+
+/* ===================== BAB 1: FINANCIAL STATEMENT ANALYSIS (12) ===================== */
+addF([
+{
+  id:'dupont3',ch:1,year:1920,who:'Donaldson Brown (DuPont)',name:'DuPont Analysis (3-Step)',
+  desc:'Memecah Return on Equity menjadi tiga komponen — margin keuntungan, efisiensi aset, dan leverage keuangan — untuk mendiagnosis SUMBER profitabilitas perusahaan, bukan cuma melihat angka ROE mentah.',
+  tex:'ROE=\\underbrace{\\frac{NI}{Sales}}_{\\text{Net Margin}}\\times\\underbrace{\\frac{Sales}{TA}}_{\\text{Asset Turnover}}\\times\\underbrace{\\frac{TA}{Equity}}_{\\text{Equity Multiplier}}',
+  vars:[
+    {k:'margin',label:'Net Profit Margin',min:1,max:30,step:0.5,def:8,unit:'%'},
+    {k:'turnover',label:'Asset Turnover',min:0.2,max:3,step:0.05,def:1.2,unit:'x'},
+    {k:'leverage',label:'Equity Multiplier (TA/Equity)',min:1,max:6,step:0.1,def:2.5,unit:'x'}
+  ],
+  calc(v){
+    const roe = (v.margin/100)*v.turnover*v.leverage*100;
+    const pts = sweep(1,6,50,lev=>(v.margin/100)*v.turnover*lev*100);
+    return {
+      big:fmtNum(roe,2),bigUnit:'%',bigLabel:'Return on Equity (ROE)',
+      subs:[{l:'Net Margin',v:fmtNum(v.margin,1)+'%'},{l:'Asset Turnover',v:fmtNum(v.turnover,2)+'x'},{l:'Equity Multiplier',v:fmtNum(v.leverage,2)+'x'}],
+      note:{type: v.leverage>4?'warn':v.margin<3?'danger':'good', text: v.leverage>4?'Equity multiplier sangat tinggi (>4x): ROE besar mungkin didorong LEVERAGE, bukan operasi yang superior — periksa rasio utang sebelum menyimpulkan kualitas bisnis bagus.':v.margin<3?'Net margin sangat tipis (<3%): perusahaan sangat sensitif terhadap kenaikan biaya — model bisnis volume-driven (seperti retailer) butuh asset turnover tinggi untuk kompensasi.':'Kombinasi margin dan turnover terlihat sehat, ROE didorong oleh operasi yang solid, bukan hanya leverage berlebih.'},
+      chart:{xMin:1,xMax:6,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.leverage,series:[{label:'ROE vs Equity Multiplier',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'currentratio',ch:1,year:1870,who:'Praktik Akuntansi Klasik',name:'Current & Quick Ratio',
+  desc:'Mengukur kemampuan perusahaan membayar liabilitas jangka pendek menggunakan aset jangka pendek — Quick Ratio lebih konservatif karena mengecualikan inventory yang paling sulit dicairkan cepat.',
+  tex:'\\text{Current}=\\frac{CA}{CL},\\quad\\text{Quick}=\\frac{CA-Inventory}{CL}',
+  vars:[
+    {k:'ca',label:'Current Assets',min:50,max:1000,step:10,def:300,unit:'$M'},
+    {k:'cl',label:'Current Liabilities',min:50,max:1000,step:10,def:150,unit:'$M'},
+    {k:'inv',label:'Inventory',min:0,max:500,step:10,def:80,unit:'$M'}
+  ],
+  calc(v){
+    const current = v.ca/v.cl;
+    const quick = (v.ca-v.inv)/v.cl;
+    const pts = sweep(50,1000,60,ca=>ca/v.cl);
+    return {
+      big:fmtNum(current,2),bigUnit:'x',bigLabel:'Current Ratio',
+      subs:[{l:'Quick Ratio (Acid-Test)',v:fmtNum(quick,2)+'x'},{l:'Inventory % dari CA',v:fmtNum(v.inv/v.ca*100,1)+'%'}],
+      note:{type: current<1?'danger':quick<0.8?'warn':'good', text: current<1?'Current ratio <1: aset lancar TIDAK CUKUP menutupi liabilitas jangka pendek — sinyal risiko likuiditas serius.':quick<0.8?'Quick ratio rendah meski current ratio mungkin terlihat sehat — perusahaan sangat bergantung pada penjualan inventory untuk membayar utang jangka pendek.':'Likuiditas jangka pendek sehat — perusahaan punya buffer aset cair yang cukup untuk menutupi obligasi mendesak.'},
+      chart:{xMin:50,xMax:1000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.ca,hlines:[{y:1,color:COLORS.faint,dash:true}],series:[{label:'Current Ratio vs Current Assets',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'interestcoverage',ch:1,year:1900,who:'Praktik Credit Analysis',name:'Interest Coverage Ratio (TIE)',
+  desc:'Mengukur berapa kali EBIT bisa menutupi beban bunga tahunan — metrik inti yang dipakai analis kredit dan rating agency untuk menilai risiko default sebuah perusahaan.',
+  tex:'\\text{ICR}=\\frac{EBIT}{\\text{Interest Expense}}',
+  vars:[
+    {k:'ebit',label:'EBIT',min:10,max:500,step:5,def:150,unit:'$M'},
+    {k:'interest',label:'Interest Expense',min:5,max:200,step:5,def:30,unit:'$M'}
+  ],
+  calc(v){
+    const icr = v.ebit/v.interest;
+    const pts = sweep(5,200,60,i=>v.ebit/i);
+    return {
+      big:fmtNum(icr,2),bigUnit:'x',bigLabel:'Interest Coverage Ratio',
+      subs:[{l:'EBIT',v:'$'+fmtNum(v.ebit,1)+'M'},{l:'Interest Expense',v:'$'+fmtNum(v.interest,1)+'M'}],
+      note:{type: icr<1.5?'danger':icr<3?'warn':'good', text: icr<1.5?'ICR<1.5: perusahaan dalam zona bahaya — EBIT hampir tidak cukup menutupi beban bunga, risiko default tinggi jika earnings memburuk sedikit saja.':icr<3?'ICR di rentang waspada (1.5-3x): masih bisa bayar bunga, tapi buffer terbatas terhadap penurunan earnings atau kenaikan suku bunga.':'ICR sehat (>3x): perusahaan punya buffer besar untuk menutupi beban bunga bahkan jika earnings turun signifikan.'},
+      chart:{xMin:5,xMax:200,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.interest,hlines:[{y:1.5,color:COLORS.red,dash:true},{y:3,color:COLORS.green,dash:true}],series:[{label:'ICR vs Interest Expense',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'altmanz',ch:1,year:1968,who:'Edward Altman',name:'Altman Z-Score',
+  desc:'Model prediksi kebangkrutan berbasis 5 rasio keuangan tertimbang — salah satu model credit risk paling terkenal dan masih dipakai luas oleh analis kredit hingga hari ini.',
+  tex:'Z=1.2A+1.4B+3.3C+0.6D+1.0E',
+  vars:[
+    {k:'wcTa',label:'Working Capital / Total Assets (A)',min:-0.2,max:0.6,step:0.01,def:0.2,unit:''},
+    {k:'reTa',label:'Retained Earnings / Total Assets (B)',min:-0.3,max:0.8,step:0.01,def:0.15,unit:''},
+    {k:'ebitTa',label:'EBIT / Total Assets (C)',min:-0.1,max:0.4,step:0.01,def:0.12,unit:''},
+    {k:'mveTl',label:'Market Value Equity / Liabilities (D)',min:0.1,max:3,step:0.05,def:1.5,unit:''},
+    {k:'salesTa',label:'Sales / Total Assets (E)',min:0.2,max:3,step:0.05,def:0.9,unit:''}
+  ],
+  calc(v){
+    const Z = 1.2*v.wcTa + 1.4*v.reTa + 3.3*v.ebitTa + 0.6*v.mveTl + 1.0*v.salesTa;
+    const pts = sweep(0.1,3,60,d=>1.2*v.wcTa+1.4*v.reTa+3.3*v.ebitTa+0.6*d+1.0*v.salesTa);
+    return {
+      big:fmtNum(Z,2),bigUnit:'',bigLabel:'Altman Z-Score',
+      subs:[{l:'Zona',v: Z>2.99?'Aman (Safe)':Z>1.81?'Abu-abu (Grey)':'Distress'},{l:'Kontribusi EBIT/TA',v:fmtNum(3.3*v.ebitTa,2)}],
+      note:{type: Z>2.99?'good':Z>1.81?'warn':'danger', text: Z>2.99?'Z-Score >2.99: zona AMAN — probabilitas kebangkrutan dalam 2 tahun ke depan secara historis sangat rendah.':Z>1.81?'Z-Score di zona ABU-ABU (1.81-2.99): perlu analisis kualitatif tambahan, model ini tidak memberikan sinyal pasti.':'Z-Score <1.81: zona DISTRESS — secara historis model ini punya akurasi tinggi memprediksi kebangkrutan dalam 2 tahun pada kondisi ini.'},
+      chart:{xMin:0.1,xMax:3,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.mveTl,hlines:[{y:1.81,color:COLORS.red,dash:true},{y:2.99,color:COLORS.green,dash:true}],series:[{label:'Z-Score vs MVE/Liabilities',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'accrualratio',ch:1,year:1996,who:'Richard Sloan',name:'Accrual Ratio (Earnings Quality)',
+  desc:'Mengukur proporsi laba yang berasal dari ACCRUAL (estimasi akuntansi) versus CASH FLOW aktual — riset Sloan (1996) menunjukkan perusahaan dengan accrual tinggi cenderung underperform di masa depan karena kualitas earnings rendah.',
+  tex:'\\text{Accrual Ratio}=\\frac{NI-CFO}{\\text{Total Assets}}',
+  vars:[
+    {k:'ni',label:'Net Income',min:10,max:300,step:5,def:100,unit:'$M'},
+    {k:'cfo',label:'Cash Flow from Operations',min:-50,max:350,step:5,def:70,unit:'$M'},
+    {k:'ta',label:'Total Assets',min:200,max:2000,step:25,def:900,unit:'$M'}
+  ],
+  calc(v){
+    const accrualRatio = (v.ni-v.cfo)/v.ta*100;
+    const pts = sweep(-50,350,60,cfo=>(v.ni-cfo)/v.ta*100);
+    return {
+      big:fmtNum(accrualRatio,2),bigUnit:'%',bigLabel:'Accrual Ratio',
+      subs:[{l:'Net Income',v:'$'+fmtNum(v.ni,1)+'M'},{l:'CFO',v:'$'+fmtNum(v.cfo,1)+'M'},{l:'Selisih (NI-CFO)',v:'$'+fmtNum(v.ni-v.cfo,1)+'M'}],
+      note:{type: accrualRatio>10?'danger':accrualRatio>5?'warn':'good', text: accrualRatio>10?'Accrual ratio sangat tinggi (>10%): laba JAUH lebih besar dari cash flow aktual — red flag kualitas earnings, riset akademik menunjukkan korelasi dengan future underperformance atau bahkan kecurangan akuntansi.':accrualRatio>5?'Accrual ratio moderat: sebagian laba berasal dari estimasi akuntansi (depresiasi, provisi, dll) — perlu cek detail apakah ini wajar untuk model bisnisnya.':'Accrual ratio rendah/negatif: laba didukung kuat oleh cash flow aktual — sinyal kualitas earnings yang baik.'},
+      chart:{xMin:-50,xMax:350,yMin:Math.min(...pts.map(p=>p.y))-2,yMax:Math.max(...pts.map(p=>p.y))+2,vline:v.cfo,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Accrual Ratio vs CFO',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'cashconversion',ch:1,year:1980,who:'Hyman Minsky (basis), praktik korporasi',name:'Cash Conversion Cycle (CCC)',
+  desc:'Mengukur berapa hari yang dibutuhkan perusahaan untuk mengubah investasi di inventory dan resources menjadi cash dari penjualan — semakin pendek CCC, semakin efisien manajemen modal kerja perusahaan.',
+  tex:'CCC=DIO+DSO-DPO',
+  vars:[
+    {k:'dio',label:'Days Inventory Outstanding (DIO)',min:0,max:120,step:1,def:45,unit:' hari'},
+    {k:'dso',label:'Days Sales Outstanding (DSO)',min:0,max:90,step:1,def:30,unit:' hari'},
+    {k:'dpo',label:'Days Payable Outstanding (DPO)',min:0,max:90,step:1,def:25,unit:' hari'}
+  ],
+  calc(v){
+    const ccc = v.dio+v.dso-v.dpo;
+    const pts = sweep(0,90,60,dpo=>v.dio+v.dso-dpo);
+    return {
+      big:fmtNum(ccc,1),bigUnit:' hari',bigLabel:'Cash Conversion Cycle',
+      subs:[{l:'DIO (inventory)',v:fmtNum(v.dio,0)+' hr'},{l:'DSO (receivables)',v:fmtNum(v.dso,0)+' hr'},{l:'DPO (payables)',v:fmtNum(v.dpo,0)+' hr'}],
+      note:{type: ccc<0?'good':ccc>60?'warn':'info', text: ccc<0?'CCC NEGATIF: perusahaan dibayar pelanggan SEBELUM harus membayar supplier-nya sendiri — model bisnis sangat efisien dalam modal kerja (umum di retail besar seperti Amazon/Walmart).':ccc>60?'CCC panjang (>60 hari): modal kerja terkunci cukup lama di siklus operasi — bisa jadi tanda inventory menumpuk atau collection receivables lambat.':'CCC dalam rentang wajar untuk kebanyakan industri manufaktur/retail menengah.'},
+      chart:{xMin:0,xMax:90,yMin:Math.min(...pts.map(p=>p.y))-5,yMax:Math.max(...pts.map(p=>p.y))+5,vline:v.dpo,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'CCC vs Days Payable Outstanding',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'operatingleverage',ch:1,year:1950,who:'Praktik Cost Accounting',name:'Degree of Operating Leverage (DOL)',
+  desc:'Mengukur sensitivitas EBIT terhadap perubahan penjualan — perusahaan dengan fixed cost tinggi (manufaktur berat) punya DOL tinggi, artinya EBIT sangat volatile terhadap fluktuasi sales.',
+  tex:'DOL=\\frac{\\%\\Delta EBIT}{\\%\\Delta Sales}=\\frac{\\text{Contribution Margin}}{EBIT}',
+  vars:[
+    {k:'contMargin',label:'Contribution Margin',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'fixedCost',label:'Fixed Cost',min:20,max:400,step:10,def:120,unit:'$M'}
+  ],
+  calc(v){
+    const ebit = v.contMargin - v.fixedCost;
+    const dol = ebit !== 0 ? v.contMargin/ebit : Infinity;
+    const pts = sweep(20,400,60,fc=>{ const e=v.contMargin-fc; return e!==0? v.contMargin/e : null; }).filter(p=>p.y!==null && Math.abs(p.y)<20);
+    return {
+      big: isFinite(dol)?fmtNum(dol,2):'∞',bigUnit:'x',bigLabel:'Degree of Operating Leverage',
+      subs:[{l:'EBIT',v:'$'+fmtNum(ebit,1)+'M'},{l:'Contribution Margin',v:'$'+fmtNum(v.contMargin,1)+'M'}],
+      note:{type: dol>3?'warn':dol<0?'danger':'good', text: dol<0?'EBIT negatif: perusahaan beroperasi di bawah titik impas (break-even) pada level fixed cost ini.':dol>3?'DOL tinggi (>3x): EBIT SANGAT sensitif terhadap perubahan sales — kenaikan 10% sales bisa menghasilkan kenaikan EBIT >30%, tapi sebaliknya juga berlaku saat sales turun.':'DOL moderat: struktur biaya relatif seimbang antara fixed dan variable cost.'},
+      chart:{xMin:20,xMax:400,yMin:-10,yMax:10,vline:v.fixedCost,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'DOL vs Fixed Cost',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'financialleverage',ch:1,year:1950,who:'Praktik Corporate Finance',name:'Degree of Financial Leverage (DFL)',
+  desc:'Mengukur sensitivitas EPS terhadap perubahan EBIT — semakin besar proporsi utang (dan beban bunga fixed), semakin tinggi DFL, artinya EPS jadi lebih volatile terhadap fluktuasi operasional.',
+  tex:'DFL=\\frac{\\%\\Delta EPS}{\\%\\Delta EBIT}=\\frac{EBIT}{EBIT-\\text{Interest}}',
+  vars:[
+    {k:'ebit2',label:'EBIT',min:20,max:400,step:5,def:150,unit:'$M'},
+    {k:'interest2',label:'Interest Expense',min:0,max:200,step:5,def:40,unit:'$M'}
+  ],
+  calc(v){
+    const ebt = v.ebit2-v.interest2;
+    const dfl = ebt !== 0 ? v.ebit2/ebt : Infinity;
+    const pts = sweep(0,200,60,i=>{ const e=v.ebit2-i; return e>0.01? v.ebit2/e : null; }).filter(p=>p.y!==null && p.y<15);
+    return {
+      big: isFinite(dfl)?fmtNum(dfl,2):'∞',bigUnit:'x',bigLabel:'Degree of Financial Leverage',
+      subs:[{l:'EBT (EBIT-Interest)',v:'$'+fmtNum(ebt,1)+'M'},{l:'EBIT',v:'$'+fmtNum(v.ebit2,1)+'M'}],
+      note:{type: dfl>3?'warn':dfl<0?'danger':'good', text: dfl<0?'EBT negatif: beban bunga melebihi EBIT — perusahaan dalam kondisi distress finansial serius.':dfl>3?'DFL tinggi (>3x): EPS sangat sensitif terhadap perubahan EBIT akibat leverage finansial besar — risiko volatility laba per saham meningkat tajam.':'DFL moderat: struktur modal tidak terlalu agresif dalam menggunakan utang.'},
+      chart:{xMin:0,xMax:200,yMin:0,yMax:8,vline:v.interest2,series:[{label:'DFL vs Interest Expense',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'workingcapitalturn',ch:1,year:1900,who:'Praktik Manajemen Keuangan',name:'Working Capital Turnover',
+  desc:'Mengukur seberapa efisien perusahaan menggunakan modal kerja untuk menghasilkan penjualan — rasio tinggi bisa berarti efisiensi tinggi, TAPI rasio EKSTREM tinggi juga bisa mengindikasikan modal kerja terlalu tipis (risiko likuiditas).',
+  tex:'\\text{WC Turnover}=\\frac{\\text{Net Sales}}{\\text{Working Capital}}',
+  vars:[
+    {k:'netsales',label:'Net Sales',min:100,max:2000,step:25,def:800,unit:'$M'},
+    {k:'wc',label:'Working Capital (CA-CL)',min:10,max:500,step:10,def:150,unit:'$M'}
+  ],
+  calc(v){
+    const turnover = v.netsales/v.wc;
+    const pts = sweep(10,500,60,wc=>v.netsales/wc);
+    return {
+      big:fmtNum(turnover,2),bigUnit:'x',bigLabel:'Working Capital Turnover',
+      subs:[{l:'Net Sales',v:'$'+fmtNum(v.netsales,0)+'M'},{l:'Working Capital',v:'$'+fmtNum(v.wc,0)+'M'}],
+      note:{type: turnover>15?'warn':turnover<2?'info':'good', text: turnover>15?'Turnover sangat tinggi (>15x): modal kerja relatif sangat tipis dibanding penjualan — efisien, tapi juga rentan terhadap shock likuiditas mendadak (misal supplier menuntut pembayaran lebih cepat).':turnover<2?'Turnover rendah (<2x): perusahaan menahan modal kerja relatif besar dibanding penjualannya — bisa jadi tanda inventory/receivables tidak terkelola optimal.':'Working capital turnover dalam rentang sehat untuk kebanyakan model bisnis.'},
+      chart:{xMin:10,xMax:500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.wc,series:[{label:'WC Turnover vs Working Capital',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'grossmargin',ch:1,year:1900,who:'Praktik Akuntansi Dasar',name:'Gross & Operating Margin',
+  desc:'Dua metrik margin paling fundamental — Gross Margin mengukur efisiensi produksi langsung (COGS), Operating Margin menambahkan biaya operasional (SG&A) untuk gambaran profitabilitas inti bisnis.',
+  tex:'\\text{Gross Margin}=\\frac{\\text{Revenue}-COGS}{\\text{Revenue}},\\quad\\text{Op. Margin}=\\frac{EBIT}{\\text{Revenue}}',
+  vars:[
+    {k:'revenue',label:'Revenue',min:100,max:2000,step:25,def:1000,unit:'$M'},
+    {k:'cogs',label:'COGS',min:50,max:1500,step:25,def:600,unit:'$M'},
+    {k:'sga',label:'SG&A + Operating Expenses',min:20,max:600,step:10,def:250,unit:'$M'}
+  ],
+  calc(v){
+    const grossProfit = v.revenue-v.cogs;
+    const grossMargin = grossProfit/v.revenue*100;
+    const ebit = grossProfit-v.sga;
+    const opMargin = ebit/v.revenue*100;
+    const pts = sweep(50,1500,60,cogs=>(v.revenue-cogs)/v.revenue*100);
+    return {
+      big:fmtNum(grossMargin,2),bigUnit:'%',bigLabel:'Gross Margin',
+      subs:[{l:'Operating Margin (EBIT)',v:fmtNum(opMargin,2)+'%'},{l:'Gross Profit',v:'$'+fmtNum(grossProfit,1)+'M'},{l:'EBIT',v:'$'+fmtNum(ebit,1)+'M'}],
+      note:{type: opMargin<0?'danger':grossMargin-opMargin>30?'warn':'good', text: opMargin<0?'Operating margin NEGATIF: bisnis merugi secara operasional meski mungkin gross margin terlihat sehat — SG&A terlalu besar relatif terhadap gross profit.':grossMargin-opMargin>30?'Gap besar antara Gross Margin dan Operating Margin: SG&A/opex memakan porsi besar dari gross profit — periksa efisiensi biaya operasional.':'Struktur margin sehat — gap antara gross dan operating margin wajar untuk model bisnis kebanyakan industri.'},
+      chart:{xMin:50,xMax:1500,yMin:Math.min(...pts.map(p=>p.y))-5,yMax:100,vline:v.cogs,series:[{label:'Gross Margin vs COGS',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'receivablesturn',ch:1,year:1900,who:'Praktik Akuntansi Manajerial',name:'Receivables & Inventory Turnover',
+  desc:'Mengukur berapa kali per tahun perusahaan "mengkonversi" receivables menjadi cash, dan inventory menjadi penjualan — indikator kunci efisiensi manajemen modal kerja dan potensi masalah collection/obsolescence.',
+  tex:'\\text{AR Turnover}=\\frac{\\text{Net Credit Sales}}{\\text{Avg. AR}},\\quad\\text{Inv. Turnover}=\\frac{COGS}{\\text{Avg. Inventory}}',
+  vars:[
+    {k:'creditsales',label:'Net Credit Sales',min:100,max:1500,step:25,def:600,unit:'$M'},
+    {k:'avgar',label:'Average Accounts Receivable',min:10,max:300,step:5,def:60,unit:'$M'},
+    {k:'cogs2',label:'COGS',min:50,max:1000,step:25,def:400,unit:'$M'},
+    {k:'avginv',label:'Average Inventory',min:10,max:300,step:5,def:80,unit:'$M'}
+  ],
+  calc(v){
+    const arTurn = v.creditsales/v.avgar;
+    const invTurn = v.cogs2/v.avginv;
+    const dso = 365/arTurn;
+    const dio = 365/invTurn;
+    const pts = sweep(10,300,60,ar=>v.creditsales/ar);
+    return {
+      big:fmtNum(arTurn,2),bigUnit:'x',bigLabel:'Receivables Turnover',
+      subs:[{l:'Days Sales Outstanding',v:fmtNum(dso,1)+' hr'},{l:'Inventory Turnover',v:fmtNum(invTurn,2)+'x'},{l:'Days Inventory Outstanding',v:fmtNum(dio,1)+' hr'}],
+      note:{type: dso>60?'warn':dio>90?'warn':'good', text: dso>60?'DSO >60 hari: collection dari pelanggan relatif lambat — periksa kualitas credit policy atau potensi masalah cash flow dari customer yang menunggak.':dio>90?'DIO >90 hari: inventory tertahan cukup lama — risiko obsolescence atau permintaan yang melambat, terutama untuk produk dengan siklus hidup pendek.':'Kecepatan konversi AR dan inventory ke cash berada dalam rentang sehat.'},
+      chart:{xMin:10,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.avgar,series:[{label:'AR Turnover vs Avg. Receivables',color:COLORS.cyan,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 2: FUNDAMENTAL VALUATION (12) ===================== */
+addF([
+{
+  id:'dcfgrowth',ch:2,year:1938,who:'John Burr Williams',name:'Discounted Cash Flow (DCF) — Gordon Terminal',
+  desc:'Metode valuasi paling fundamental: nilai perusahaan adalah PRESENT VALUE dari seluruh free cash flow masa depan — menggabungkan periode proyeksi eksplisit dengan terminal value yang diasumsikan tumbuh konstan selamanya.',
+  tex:'EV=\\sum_{t=1}^{n}\\frac{FCF_t}{(1+WACC)^t}+\\frac{FCF_n(1+g)}{(WACC-g)(1+WACC)^n}',
+  vars:[
+    {k:'fcf0',label:'FCF Tahun Ini',min:10,max:300,step:5,def:100,unit:'$M'},
+    {k:'growth',label:'Growth Rate (5 thn proyeksi)',min:0,max:30,step:0.5,def:10,unit:'%'},
+    {k:'wacc',label:'WACC (discount rate)',min:4,max:20,step:0.25,def:10,unit:'%'},
+    {k:'termgrowth',label:'Terminal Growth Rate',min:0,max:5,step:0.1,def:3,unit:'%'}
+  ],
+  calc(v){
+    const n=5;
+    let pvSum=0, fcf=v.fcf0, lastFcf=0;
+    for(let t=1;t<=n;t++){
+      fcf = fcf*(1+v.growth/100);
+      pvSum += fcf/Math.pow(1+v.wacc/100,t);
+      lastFcf = fcf;
+    }
+    const termValue = lastFcf*(1+v.termgrowth/100)/((v.wacc-v.termgrowth)/100);
+    const pvTerm = termValue/Math.pow(1+v.wacc/100,n);
+    const ev = pvSum+pvTerm;
+    const pts = sweep(4,20,60,w=>{
+      let pv=0, f=v.fcf0, last=0;
+      for(let t=1;t<=n;t++){ f=f*(1+v.growth/100); pv+=f/Math.pow(1+w/100,t); last=f; }
+      const tv = last*(1+v.termgrowth/100)/((w-v.termgrowth)/100);
+      return pv+tv/Math.pow(1+w/100,n);
+    });
+    return {
+      big:fmtNum(ev,1),bigUnit:'$M',bigLabel:'Enterprise Value (DCF)',
+      subs:[{l:'PV of 5-Yr FCFs',v:'$'+fmtNum(pvSum,1)+'M'},{l:'Terminal Value',v:'$'+fmtNum(termValue,1)+'M'},{l:'PV of Terminal Value',v:'$'+fmtNum(pvTerm,1)+'M'},{l:'% EV dari Terminal Value',v:fmtNum(pvTerm/ev*100,1)+'%'}],
+      note:{type: pvTerm/ev>0.75?'warn':'info', text: pvTerm/ev>0.75?'Lebih dari 75% Enterprise Value berasal dari Terminal Value — valuasi SANGAT sensitif terhadap asumsi growth jangka panjang dan WACC, bukan dari cash flow yang bisa diprediksi dengan keyakinan tinggi.':'Proporsi terminal value relatif wajar — sebagian besar nilai didukung oleh proyeksi cash flow eksplisit yang lebih bisa diverifikasi.'},
+      chart:{xMin:4,xMax:20,yMin:0,yMax:Math.max(...pts.filter(p=>isFinite(p.y)&&p.y>0).map(p=>p.y))*1.15,vline:v.wacc,series:[{label:'Enterprise Value vs WACC',color:COLORS.amber,pts:pts.filter(p=>isFinite(p.y)&&p.y>0&&p.y<ev*5)}]}
+    };
+  }
+},
+{
+  id:'gordongrowth',ch:2,year:1956,who:'Myron Gordon & Eli Shapiro',name:'Gordon Growth Model (DDM)',
+  desc:'Model valuasi saham berdasarkan dividen yang diharapkan tumbuh konstan selamanya — sangat sensitif terhadap selisih (r-g), sehingga hanya cocok untuk perusahaan dividen MATANG dan stabil, bukan growth stock.',
+  tex:'P_0=\\frac{D_1}{r-g}',
+  vars:[
+    {k:'d1',label:'Dividen Tahun Depan (D₁)',min:0.5,max:20,step:0.25,def:5,unit:'$'},
+    {k:'r',label:'Required Return (r)',min:4,max:20,step:0.25,def:10,unit:'%'},
+    {k:'g',label:'Growth Rate Dividen (g)',min:0,max:8,step:0.25,def:4,unit:'%'}
+  ],
+  calc(v){
+    const spread = (v.r-v.g)/100;
+    const price = spread>0 ? v.d1/spread : Infinity;
+    const pts = sweep(4,8,60,g=>{ const s=(v.r-g)/100; return s>0.005? v.d1/s : null; }).filter(p=>p.y!==null);
+    return {
+      big: isFinite(price)?fmtNum(price,2):'∞',bigUnit:'',bigLabel:'Harga Wajar Saham (P₀)',
+      subs:[{l:'r - g (spread)',v:fmtNum(v.r-v.g,2)+'%'},{l:'Dividend Yield Implied',v:fmtNum(v.d1/price*100,2)+'%'}],
+      note:{type: (v.r-v.g)<2?'danger':(v.r-v.g)<4?'warn':'good', text: (v.r-v.g)<2?'Spread (r-g) sangat kecil (<2%): harga menjadi HIPER-sensitif terhadap asumsi growth — perubahan kecil pada g bisa mengubah valuasi secara dramatis. Model ini berbahaya dipakai di kondisi ini.':(v.r-v.g)<4?'Spread cukup tipis: valuasi cukup sensitif terhadap asumsi growth, gunakan dengan hati-hati dan sensitivity analysis.':'Spread (r-g) wajar — model memberikan estimasi yang relatif stabil terhadap perubahan kecil asumsi.'},
+      chart:{xMin:4,xMax:8,yMin:0,yMax:Math.max(...pts.filter(p=>p.y<500).map(p=>p.y))*1.15,vline:v.g,series:[{label:'Harga Saham vs Growth Rate',color:COLORS.cyan,pts:pts.filter(p=>p.y<500)}]}
+    };
+  }
+},
+{
+  id:'evebitda',ch:2,year:1980,who:'Praktik Investment Banking',name:'EV/EBITDA Multiple Valuation',
+  desc:'Multiple valuasi paling populer di M&A dan comps analysis — membandingkan Enterprise Value perusahaan terhadap EBITDA-nya, mengabaikan perbedaan struktur modal dan kebijakan depresiasi antar perusahaan.',
+  tex:'EV=\\text{EBITDA}\\times\\text{Multiple Peer}',
+  vars:[
+    {k:'ebitda',label:'EBITDA Target',min:20,max:500,step:5,def:150,unit:'$M'},
+    {k:'multiple',label:'Peer EV/EBITDA Multiple',min:3,max:25,step:0.5,def:9,unit:'x'},
+    {k:'netdebt',label:'Net Debt Target',min:-100,max:500,step:10,def:100,unit:'$M'}
+  ],
+  calc(v){
+    const ev = v.ebitda*v.multiple;
+    const equityValue = ev-v.netdebt;
+    const pts = sweep(3,25,60,m=>v.ebitda*m);
+    return {
+      big:fmtNum(ev,1),bigUnit:'$M',bigLabel:'Implied Enterprise Value',
+      subs:[{l:'Implied Equity Value',v:'$'+fmtNum(equityValue,1)+'M'},{l:'Net Debt',v:'$'+fmtNum(v.netdebt,1)+'M'}],
+      note:{type: v.multiple>15?'warn':v.multiple<5?'info':'good', text: v.multiple>15?'Multiple >15x EBITDA: peer group dihargai sangat premium — pastikan target memang sebanding kualitasnya (growth, margin, risiko) dengan peer yang dipakai sebagai basis, atau valuasi bisa terlalu optimis.':v.multiple<5?'Multiple sangat rendah (<5x): bisa mengindikasikan sektor yang out-of-favor, atau ada risiko structural yang membuat pasar mendiskon valuasi perusahaan sejenis.':'Multiple berada di rentang wajar untuk kebanyakan sektor industri matang.'},
+      chart:{xMin:3,xMax:25,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.multiple,series:[{label:'Enterprise Value vs Multiple',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'residualincome',ch:2,year:1890,who:'Alfred Marshall (konsep), formalisasi modern Ohlson',name:'Residual Income Model',
+  desc:'Mengukur nilai EKONOMIS yang diciptakan perusahaan SETELAH memperhitungkan biaya modal ekuitas — berbeda dengan akuntansi tradisional yang hanya melihat laba bersih tanpa "membebankan" cost of equity.',
+  tex:'RI=NI-(r_e\\times \\text{Book Value Equity})',
+  vars:[
+    {k:'ni2',label:'Net Income',min:10,max:300,step:5,def:80,unit:'$M'},
+    {k:'re',label:'Cost of Equity (rₑ)',min:4,max:20,step:0.25,def:10,unit:'%'},
+    {k:'bve',label:'Book Value of Equity',min:100,max:1500,step:25,def:500,unit:'$M'}
+  ],
+  calc(v){
+    const equityCharge = v.re/100*v.bve;
+    const ri = v.ni2-equityCharge;
+    const roe = v.ni2/v.bve*100;
+    const pts = sweep(100,1500,60,bve=>v.ni2-(v.re/100*bve));
+    return {
+      big:fmtNum(ri,2),bigUnit:'$M',bigLabel:'Residual Income',
+      subs:[{l:'Equity Charge (rₑ×BVE)',v:'$'+fmtNum(equityCharge,1)+'M'},{l:'ROE Implied',v:fmtNum(roe,2)+'%'},{l:'ROE vs Cost of Equity',v:fmtNum(roe-v.re,2)+'pp'}],
+      note:{type: ri<0?'danger':ri/v.ni2<0.1?'warn':'good', text: ri<0?'Residual Income NEGATIF: perusahaan secara akuntansi profitable (NI positif), tapi secara EKONOMIS menghancurkan nilai — ROE-nya lebih rendah dari cost of equity yang dituntut investor.':ri/v.ni2<0.1?'Residual Income positif tapi tipis: perusahaan baru sedikit di atas breakeven ekonomis relatif terhadap tuntutan return investor.':'Residual Income kuat positif: perusahaan menciptakan nilai ekonomis riil di atas biaya modal ekuitasnya — sinyal kualitas manajemen modal yang baik.'},
+      chart:{xMin:100,xMax:1500,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.bve,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Residual Income vs Book Value Equity',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'pegratio',ch:2,year:1960,who:'Mario Farina (popularized: Peter Lynch)',name:'PEG Ratio',
+  desc:'Menyesuaikan P/E ratio dengan growth rate — dipopulerkan Peter Lynch sebagai cara cepat menilai apakah saham growth "mahal" relatif terhadap kecepatan pertumbuhan earnings-nya, bukan cuma P/E mentah.',
+  tex:'PEG=\\frac{P/E}{\\text{Growth Rate (\\%)}}',
+  vars:[
+    {k:'pe',label:'Price-to-Earnings (P/E)',min:5,max:80,step:1,def:25,unit:'x'},
+    {k:'eps_growth',label:'EPS Growth Rate',min:1,max:50,step:1,def:15,unit:'%'}
+  ],
+  calc(v){
+    const peg = v.pe/v.eps_growth;
+    const pts = sweep(1,50,60,g=>v.pe/g);
+    return {
+      big:fmtNum(peg,2),bigUnit:'',bigLabel:'PEG Ratio',
+      subs:[{l:'P/E Ratio',v:fmtNum(v.pe,1)+'x'},{l:'EPS Growth',v:fmtNum(v.eps_growth,1)+'%'}],
+      note:{type: peg>2?'warn':peg<1?'good':'info', text: peg>2?'PEG >2: saham terlihat MAHAL relatif terhadap growth rate-nya menurut heuristik Lynch — pastikan growth rate yang dipakai realistis dan berkelanjutan.':peg<1?'PEG <1: secara heuristik klasik, saham ini terlihat UNDERVALUED relatif terhadap growth-nya — tapi tetap verifikasi kualitas earnings dan keberlanjutan growth rate.':'PEG mendekati 1: heuristik Lynch menganggap valuasi "fair" relatif terhadap growth — meski ini cuma rule of thumb, bukan model valuasi rigorous.'},
+      chart:{xMin:1,xMax:50,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.eps_growth,hlines:[{y:1,color:COLORS.green,dash:true},{y:2,color:COLORS.red,dash:true}],series:[{label:'PEG vs EPS Growth',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'sumofparts',ch:2,year:1980,who:'Praktik Investment Banking (Conglomerate Valuation)',name:'Sum-of-the-Parts (SOTP) Valuation',
+  desc:'Menilai perusahaan dengan multi-segmen bisnis secara TERPISAH (masing-masing dengan multiple yang sesuai sektornya), lalu dijumlahkan — sering mengungkap "conglomerate discount" jika harga pasar lebih rendah dari SOTP.',
+  tex:'EV_{total}=\\sum_i \\text{EBITDA}_i\\times \\text{Multiple}_i',
+  vars:[
+    {k:'seg1ebitda',label:'Segmen A — EBITDA',min:10,max:300,step:5,def:80,unit:'$M'},
+    {k:'seg1mult',label:'Segmen A — Multiple',min:3,max:20,step:0.5,def:12,unit:'x'},
+    {k:'seg2ebitda',label:'Segmen B — EBITDA',min:10,max:300,step:5,def:50,unit:'$M'},
+    {k:'seg2mult',label:'Segmen B — Multiple',min:3,max:20,step:0.5,def:6,unit:'x'},
+    {k:'currentmcap',label:'Market Cap Saat Ini',min:100,max:2000,step:25,def:900,unit:'$M'}
+  ],
+  calc(v){
+    const ev1 = v.seg1ebitda*v.seg1mult;
+    const ev2 = v.seg2ebitda*v.seg2mult;
+    const sotpValue = ev1+ev2;
+    const discount = (sotpValue-v.currentmcap)/sotpValue*100;
+    const pts = sweep(100,2000,60,mc=>(sotpValue-mc)/sotpValue*100);
+    return {
+      big:fmtNum(sotpValue,1),bigUnit:'$M',bigLabel:'SOTP Enterprise Value',
+      subs:[{l:'Segmen A Value',v:'$'+fmtNum(ev1,1)+'M'},{l:'Segmen B Value',v:'$'+fmtNum(ev2,1)+'M'},{l:'Conglomerate Discount',v:fmtNum(discount,1)+'%'}],
+      note:{type: discount>20?'good':discount<0?'warn':'info', text: discount>20?'Conglomerate discount BESAR (>20%): pasar menghargai perusahaan jauh di bawah nilai SOTP — bisa jadi peluang value investing, atau ada alasan struktural (kompleksitas, governance) yang membuat diskon ini persisten.':discount<0?'Market cap saat ini LEBIH TINGGI dari estimasi SOTP — pasar mungkin memberikan premium untuk sinergi antar segmen, atau valuasi market sedang optimis berlebihan.':'Diskon konglomerat dalam rentang wajar yang umum ditemukan pada multi-segment companies.'},
+      chart:{xMin:100,xMax:2000,yMin:Math.min(...pts.map(p=>p.y))-5,yMax:Math.max(...pts.map(p=>p.y))+5,vline:v.currentmcap,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Conglomerate Discount vs Market Cap',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'pricetobok',ch:2,year:1900,who:'Praktik Value Investing (Graham)',name:'Price-to-Book (P/B) Ratio',
+  desc:'Membandingkan harga pasar saham dengan nilai buku akuntansinya per saham — fondasi screening value investing klasik ala Benjamin Graham, terutama relevan untuk sektor finansial (bank) dan asset-heavy industries.',
+  tex:'P/B=\\frac{\\text{Price per Share}}{\\text{Book Value per Share}}',
+  vars:[
+    {k:'price2',label:'Harga Saham',min:5,max:200,step:1,def:45,unit:'$'},
+    {k:'bvps',label:'Book Value per Share',min:5,max:150,step:1,def:30,unit:'$'},
+    {k:'roe2',label:'ROE Perusahaan',min:1,max:30,step:0.5,def:12,unit:'%'}
+  ],
+  calc(v){
+    const pb = v.price2/v.bvps;
+    const pts = sweep(5,150,60,bvps=>v.price2/bvps);
+    return {
+      big:fmtNum(pb,2),bigUnit:'x',bigLabel:'Price-to-Book Ratio',
+      subs:[{l:'Book Value per Share',v:'$'+fmtNum(v.bvps,2)},{l:'ROE Perusahaan',v:fmtNum(v.roe2,1)+'%'}],
+      note:{type: pb<1?'good':pb>3&&v.roe2<10?'warn':'info', text: pb<1?'P/B <1x: saham diperdagangkan di BAWAH nilai buku akuntansinya — klasik sinyal value investing Graham, tapi verifikasi dulu apakah aset di balance sheet benar-benar bernilai sesuai bukunya (tidak ada hidden liabilities/impairment).':pb>3&&v.roe2<10?'P/B tinggi (>3x) TAPI ROE rendah (<10%): kombinasi yang tidak konsisten — pasar membayar premium tinggi untuk perusahaan yang returns-nya biasa saja, mungkin ada ekspektasi growth tinggi yang berisiko tidak terealisasi.':'P/B berada dalam rentang yang konsisten dengan profil profitabilitas (ROE) perusahaan.'},
+      chart:{xMin:5,xMax:150,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.bvps,hlines:[{y:1,color:COLORS.green,dash:true}],series:[{label:'P/B vs Book Value per Share',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'evaformula',ch:2,year:1989,who:'Stern Stewart & Co.',name:'Economic Value Added (EVA)',
+  desc:'Metrik kinerja korporat yang mengukur PROFIT EKONOMIS sesungguhnya — laba operasi setelah pajak (NOPAT) dikurangi biaya MODAL TOTAL (bukan cuma biaya utang) — dipopulerkan Stern Stewart sebagai alternatif metrik akuntansi tradisional.',
+  tex:'EVA=NOPAT-(WACC\\times \\text{Invested Capital})',
+  vars:[
+    {k:'nopat',label:'NOPAT',min:20,max:400,step:5,def:120,unit:'$M'},
+    {k:'wacc2',label:'WACC',min:4,max:18,step:0.25,def:9,unit:'%'},
+    {k:'investedcap',label:'Invested Capital',min:200,max:3000,step:50,def:1200,unit:'$M'}
+  ],
+  calc(v){
+    const capitalCharge = v.wacc2/100*v.investedcap;
+    const eva = v.nopat-capitalCharge;
+    const roic = v.nopat/v.investedcap*100;
+    const pts = sweep(200,3000,60,ic=>v.nopat-(v.wacc2/100*ic));
+    return {
+      big:fmtNum(eva,2),bigUnit:'$M',bigLabel:'Economic Value Added',
+      subs:[{l:'Capital Charge',v:'$'+fmtNum(capitalCharge,1)+'M'},{l:'ROIC',v:fmtNum(roic,2)+'%'},{l:'ROIC vs WACC',v:fmtNum(roic-v.wacc2,2)+'pp'}],
+      note:{type: eva<0?'danger':eva/v.nopat<0.15?'warn':'good', text: eva<0?'EVA NEGATIF: perusahaan menghasilkan NOPAT positif secara akuntansi, tapi ROIC-nya LEBIH RENDAH dari WACC — secara ekonomis perusahaan ini menghancurkan nilai pemegang saham meski "untung" di laporan keuangan.':eva/v.nopat<0.15?'EVA positif tapi tipis relatif terhadap NOPAT: margin keamanan ekonomis terbatas, ROIC hanya sedikit di atas cost of capital.':'EVA kuat positif: ROIC jauh melampaui WACC — perusahaan menciptakan nilai ekonomis riil yang signifikan bagi pemegang sahamnya.'},
+      chart:{xMin:200,xMax:3000,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.investedcap,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'EVA vs Invested Capital',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'tobinsq',ch:2,year:1969,who:'James Tobin',name:"Tobin's Q",
+  desc:'Rasio antara nilai pasar perusahaan dan biaya REPLACEMENT aset fisiknya — Q>1 mengindikasikan pasar menilai perusahaan lebih tinggi dari biaya membangun ulang asetnya dari nol (sering karena intangibles/brand/moat).',
+  tex:"Q=\\frac{\\text{Market Value of Firm}}{\\text{Replacement Cost of Assets}}",
+  vars:[
+    {k:'mvf',label:'Market Value of Firm',min:50,max:1500,step:25,def:500,unit:'$M'},
+    {k:'repcost',label:'Replacement Cost of Assets',min:50,max:1500,step:25,def:350,unit:'$M'}
+  ],
+  calc(v){
+    const q = v.mvf/v.repcost;
+    const pts = sweep(50,1500,60,rc=>v.mvf/rc);
+    return {
+      big:fmtNum(q,2),bigUnit:'',bigLabel:"Tobin's Q",
+      subs:[{l:'Market Value',v:'$'+fmtNum(v.mvf,1)+'M'},{l:'Replacement Cost',v:'$'+fmtNum(v.repcost,1)+'M'}],
+      note:{type: q>2?'warn':q<1?'info':'good', text: q>2?'Q>2: pasar menilai perusahaan jauh di atas biaya replacement aset fisiknya — biasanya mengindikasikan intangible value besar (brand, paten, network effect) ATAU potensi overvaluation jika tidak didukung fundamental jelas.':q<1?'Q<1: secara teori, lebih murah membeli SAHAM perusahaan ini daripada membangun ulang asetnya dari nol — sinyal klasik bahwa perusahaan mungkin undervalued atau sedang menghadapi prospek industri yang lemah.':'Tobin\'s Q mendekati 1 — nilai pasar perusahaan relatif konsisten dengan biaya replacement asetnya.'},
+      chart:{xMin:50,xMax:1500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.repcost,hlines:[{y:1,color:COLORS.green,dash:true}],series:[{label:"Tobin's Q vs Replacement Cost",color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'ddm2stage',ch:2,year:1962,who:'Modigliani & Miller (perluasan model dividen)',name:'Two-Stage Dividend Discount Model',
+  desc:'Memperluas Gordon Growth Model untuk perusahaan yang sedang mengalami fase HIGH GROWTH sementara, sebelum akhirnya "matang" ke growth rate stabil jangka panjang — lebih realistis dibanding asumsi growth konstan selamanya.',
+  tex:'P_0=\\sum_{t=1}^{n}\\frac{D_t}{(1+r)^t}+\\frac{D_n(1+g_{stable})}{(r-g_{stable})(1+r)^n}',
+  vars:[
+    {k:'d0',label:'Dividen Saat Ini (D₀)',min:0.5,max:10,step:0.1,def:2,unit:'$'},
+    {k:'ghigh',label:'Growth Rate Fase Tinggi (5 thn)',min:5,max:30,step:0.5,def:15,unit:'%'},
+    {k:'gstable',label:'Growth Rate Stabil (terminal)',min:1,max:8,step:0.25,def:4,unit:'%'},
+    {k:'rreq',label:'Required Return (r)',min:6,max:20,step:0.25,def:11,unit:'%'}
+  ],
+  calc(v){
+    const n=5;
+    let pvHigh=0, d=v.d0, lastD=0;
+    for(let t=1;t<=n;t++){
+      d = d*(1+v.ghigh/100);
+      pvHigh += d/Math.pow(1+v.rreq/100,t);
+      lastD = d;
+    }
+    const dTerminal = lastD*(1+v.gstable/100);
+    const termVal = dTerminal/((v.rreq-v.gstable)/100);
+    const pvTerm = termVal/Math.pow(1+v.rreq/100,n);
+    const price = pvHigh+pvTerm;
+    const pts = sweep(6,20,60,r=>{
+      let pv=0,dd=v.d0,last=0;
+      for(let t=1;t<=n;t++){ dd=dd*(1+v.ghigh/100); pv+=dd/Math.pow(1+r/100,t); last=dd; }
+      const dt=last*(1+v.gstable/100);
+      const tv = (r-v.gstable)>0.5? dt/((r-v.gstable)/100) : null;
+      return tv!==null? pv+tv/Math.pow(1+r/100,n) : null;
+    }).filter(p=>p.y!==null && p.y<1000);
+    return {
+      big:fmtNum(price,2),bigUnit:'',bigLabel:'Harga Wajar Saham (P₀)',
+      subs:[{l:'PV Fase High-Growth',v:'$'+fmtNum(pvHigh,2)},{l:'PV Terminal Value',v:'$'+fmtNum(pvTerm,2)},{l:'% dari Terminal Value',v:fmtNum(pvTerm/price*100,1)+'%'}],
+      note:{type: v.ghigh>v.rreq?'danger':pvTerm/price>0.7?'warn':'good', text: v.ghigh>v.rreq?'Growth rate fase tinggi MELEBIHI required return — secara matematis model masih valid untuk periode terbatas, tapi pastikan asumsi ini realistis untuk jangka pendek saja, tidak bisa bertahan selamanya.':pvTerm/price>0.7?'Mayoritas nilai (>70%) berasal dari terminal value pada fase stabil — valuasi sangat bergantung pada asumsi growth jangka panjang yang sulit diverifikasi.':'Kombinasi growth fase tinggi dan stabil menghasilkan distribusi nilai yang seimbang antara dividen jangka pendek dan terminal value.'},
+      chart:{xMin:6,xMax:20,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.rreq,series:[{label:'Harga Saham vs Required Return',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'fcfe',ch:2,year:1986,who:'Alfred Rappaport (Shareholder Value Analysis)',name:'Free Cash Flow to Equity (FCFE)',
+  desc:'Mengukur cash flow yang TERSEDIA bagi pemegang saham SETELAH semua obligasi ke kreditur (bunga, pelunasan utang) dipenuhi — berbeda dari FCFF yang mengukur cash flow untuk SEMUA penyedia modal (termasuk kreditur).',
+  tex:'FCFE=NI+\\text{Dep}-\\text{CapEx}-\\Delta NWC+\\text{Net Borrowing}',
+  vars:[
+    {k:'ni3',label:'Net Income',min:20,max:400,step:5,def:100,unit:'$M'},
+    {k:'dep',label:'Depreciation & Amortization',min:5,max:150,step:5,def:40,unit:'$M'},
+    {k:'capex',label:'Capital Expenditure',min:5,max:200,step:5,def:60,unit:'$M'},
+    {k:'nwcchg',label:'Δ Net Working Capital',min:-50,max:80,step:5,def:10,unit:'$M'},
+    {k:'netborrow',label:'Net Borrowing (utang baru - pelunasan)',min:-100,max:150,step:5,def:20,unit:'$M'}
+  ],
+  calc(v){
+    const fcfe = v.ni3+v.dep-v.capex-v.nwcchg+v.netborrow;
+    const pts = sweep(-100,150,60,nb=>v.ni3+v.dep-v.capex-v.nwcchg+nb);
+    return {
+      big:fmtNum(fcfe,2),bigUnit:'$M',bigLabel:'Free Cash Flow to Equity',
+      subs:[{l:'Net Income',v:'$'+fmtNum(v.ni3,1)+'M'},{l:'Capex - Depreciation',v:'$'+fmtNum(v.capex-v.dep,1)+'M'},{l:'Net Borrowing',v:'$'+fmtNum(v.netborrow,1)+'M'}],
+      note:{type: fcfe<0?'danger':fcfe<v.ni3*0.3?'warn':'good', text: fcfe<0?'FCFE NEGATIF: perusahaan tidak menghasilkan cash flow yang cukup untuk pemegang saham SETELAH capex dan kewajiban utang — kemungkinan butuh pendanaan eksternal tambahan atau capex sedang dalam fase ekspansi besar.':fcfe<v.ni3*0.3?'FCFE jauh lebih kecil dari Net Income: porsi besar laba "terkunci" di capex atau pembayaran utang — kualitas cash conversion dari laba bersih relatif rendah.':'FCFE solid relatif terhadap Net Income — perusahaan menghasilkan cash riil yang bisa didistribusikan ke pemegang saham (dividen/buyback) tanpa mengorbankan investasi.'},
+      chart:{xMin:-100,xMax:150,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.netborrow,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'FCFE vs Net Borrowing',color:COLORS.cyan,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 3: CREDIT & FIXED INCOME ANALYSIS (11) ===================== */
+addF([
+{
+  id:'bondprice',ch:3,year:1938,who:'Frederick Macaulay (formalisasi)',name:'Bond Pricing (Present Value of Cash Flows)',
+  desc:'Harga obligasi adalah PRESENT VALUE dari seluruh kupon masa depan PLUS nilai pokok (face value) saat maturity — fondasi seluruh fixed income analysis. Harga bergerak BERLAWANAN arah dengan yield (YTM).',
+  tex:'P=\\sum_{t=1}^{n}\\frac{C}{(1+y)^t}+\\frac{F}{(1+y)^n}',
+  vars:[
+    {k:'facevalue',label:'Face Value',min:500,max:5000,step:100,def:1000,unit:'$'},
+    {k:'couponrate',label:'Coupon Rate',min:0,max:12,step:0.25,def:6,unit:'%'},
+    {k:'ytm',label:'Yield to Maturity (YTM)',min:0.5,max:15,step:0.25,def:5,unit:'%'},
+    {k:'years',label:'Maturity',min:1,max:30,step:1,def:10,unit:' thn'}
+  ],
+  calc(v){
+    const coupon = v.facevalue*v.couponrate/100;
+    let price=0;
+    for(let t=1;t<=v.years;t++){ price += coupon/Math.pow(1+v.ytm/100,t); }
+    price += v.facevalue/Math.pow(1+v.ytm/100,v.years);
+    const premium = price-v.facevalue;
+    const pts = sweep(0.5,15,60,y=>{
+      let p=0;
+      for(let t=1;t<=v.years;t++){ p+=coupon/Math.pow(1+y/100,t); }
+      return p+v.facevalue/Math.pow(1+y/100,v.years);
+    });
+    return {
+      big:fmtNum(price,2),bigUnit:'',bigLabel:'Harga Obligasi',
+      subs:[{l:'Premium/Discount vs Par',v:(premium>=0?'+':'')+fmtNum(premium,2)},{l:'Status',v: premium>1?'Premium Bond':premium<-1?'Discount Bond':'Mendekati Par'}],
+      note:{type: v.ytm>v.couponrate?'warn':'info', text: v.ytm>v.couponrate?'YTM > Coupon Rate: obligasi diperdagangkan di DISCOUNT (harga<par) — investor menuntut yield lebih tinggi dari kupon nominal, biasanya karena suku bunga pasar naik sejak penerbitan.':v.ytm<v.couponrate?'YTM < Coupon Rate: obligasi diperdagangkan di PREMIUM (harga>par) — kupon nominal lebih atraktif dari yield pasar saat ini.':'Harga mendekati par value — YTM hampir sama dengan coupon rate.'},
+      chart:{xMin:0.5,xMax:15,yMin:Math.min(...pts.map(p=>p.y))*0.9,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.ytm,hlines:[{y:v.facevalue,color:COLORS.faint,dash:true}],series:[{label:'Harga Obligasi vs YTM (konveksitas harga-yield)',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'macaulayduration',ch:3,year:1938,who:'Frederick Macaulay',name:'Macaulay & Modified Duration',
+  desc:'Macaulay Duration mengukur rata-rata waktu (tertimbang PV cash flow) sampai investor menerima kembali modalnya. Modified Duration mengubahnya menjadi ESTIMASI sensitivitas harga obligasi terhadap perubahan yield 1%.',
+  tex:'D_{mod}=\\frac{D_{mac}}{1+y/k},\\quad \\%\\Delta P \\approx -D_{mod}\\times\\Delta y',
+  vars:[
+    {k:'fv2',label:'Face Value',min:500,max:5000,step:100,def:1000,unit:'$'},
+    {k:'cr2',label:'Coupon Rate',min:0,max:12,step:0.25,def:6,unit:'%'},
+    {k:'ytm2',label:'Yield to Maturity',min:0.5,max:15,step:0.25,def:5,unit:'%'},
+    {k:'years2',label:'Maturity',min:1,max:30,step:1,def:10,unit:' thn'}
+  ],
+  calc(v){
+    const coupon = v.fv2*v.cr2/100;
+    let price=0, weightedT=0;
+    for(let t=1;t<=v.years2;t++){
+      const pv = coupon/Math.pow(1+v.ytm2/100,t);
+      price += pv; weightedT += t*pv;
+    }
+    const pvFace = v.fv2/Math.pow(1+v.ytm2/100,v.years2);
+    price += pvFace; weightedT += v.years2*pvFace;
+    const macDur = weightedT/price;
+    const modDur = macDur/(1+v.ytm2/100);
+    const priceChange1pct = -modDur*1;
+    const pts = sweep(1,30,60,yrs=>{
+      let p=0,wt=0;
+      for(let t=1;t<=yrs;t++){ const pv=coupon/Math.pow(1+v.ytm2/100,t); p+=pv; wt+=t*pv; }
+      const pf = v.fv2/Math.pow(1+v.ytm2/100,yrs);
+      p+=pf; wt+=yrs*pf;
+      return (wt/p)/(1+v.ytm2/100);
+    });
+    return {
+      big:fmtNum(modDur,2),bigUnit:' thn',bigLabel:'Modified Duration',
+      subs:[{l:'Macaulay Duration',v:fmtNum(macDur,2)+' thn'},{l:'Estimasi Δ Harga jika yield +1%',v:fmtNum(priceChange1pct,2)+'%'}],
+      note:{type: modDur>12?'warn':'info', text: modDur>12?'Modified Duration tinggi (>12 tahun): obligasi ini SANGAT sensitif terhadap perubahan suku bunga — kenaikan yield 1% bisa menurunkan harga lebih dari 12%. Cocok untuk trader yang punya pandangan kuat tentang arah suku bunga, berisiko untuk investor konservatif.':'Duration moderat — sensitivitas harga terhadap perubahan yield berada di rentang yang lebih terkelola untuk portfolio fixed income tipikal.'},
+      chart:{xMin:1,xMax:30,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.years2,series:[{label:'Modified Duration vs Maturity',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'ytmiterative',ch:3,year:1900,who:'Praktik Fixed Income (solusi numerik)',name:'Yield to Maturity (Implied dari Harga Pasar)',
+  desc:'YTM adalah discount rate TUNGGAL yang membuat present value seluruh cash flow obligasi SAMA dengan harga pasarnya saat ini — tidak ada solusi closed-form, harus diselesaikan secara numerik/iteratif.',
+  tex:'P_{market}=\\sum_{t=1}^{n}\\frac{C}{(1+YTM)^t}+\\frac{F}{(1+YTM)^n}',
+  vars:[
+    {k:'marketprice',label:'Harga Pasar Obligasi',min:600,max:1400,step:10,def:950,unit:'$'},
+    {k:'fv3',label:'Face Value',min:500,max:2000,step:50,def:1000,unit:'$'},
+    {k:'cr3',label:'Coupon Rate',min:0,max:12,step:0.25,def:6,unit:'%'},
+    {k:'years3',label:'Maturity',min:1,max:30,step:1,def:10,unit:' thn'}
+  ],
+  calc(v){
+    const coupon = v.fv3*v.cr3/100;
+    function priceAt(y){
+      let p=0;
+      for(let t=1;t<=v.years3;t++){ p+=coupon/Math.pow(1+y,t); }
+      return p+v.fv3/Math.pow(1+y,v.years3);
+    }
+    // bisection search for YTM
+    let lo=0.0001, hi=0.5;
+    for(let i=0;i<80;i++){
+      const mid=(lo+hi)/2;
+      if(priceAt(mid)>v.marketprice) lo=mid; else hi=mid;
+    }
+    const ytmFound = (lo+hi)/2*100;
+    const currentYield = coupon/v.marketprice*100;
+    const pts = sweep(600,1400,60,price=>{
+      let l=0.0001,h=0.5;
+      for(let i=0;i<60;i++){ const m=(l+h)/2; if(priceAt(m)>price) l=m; else h=m; }
+      return (l+h)/2*100;
+    });
+    return {
+      big:fmtNum(ytmFound,3),bigUnit:'%',bigLabel:'Yield to Maturity (Implied)',
+      subs:[{l:'Current Yield (Coupon/Price)',v:fmtNum(currentYield,3)+'%'},{l:'Coupon Rate',v:fmtNum(v.cr3,2)+'%'}],
+      note:{type: v.marketprice<v.fv3?'info':'warn', text: v.marketprice<v.fv3?'Obligasi diperdagangkan DI BAWAH par — YTM yang dihasilkan LEBIH BESAR dari coupon rate, mencerminkan capital gain implisit jika dipegang sampai maturity.':'Obligasi diperdagangkan DI ATAS par — YTM yang dihasilkan LEBIH KECIL dari coupon rate, karena ada "capital loss" implisit yang harus diperhitungkan sampai maturity.'},
+      chart:{xMin:600,xMax:1400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.marketprice,series:[{label:'YTM Implied vs Harga Pasar',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'debttoequity',ch:3,year:1900,who:'Praktik Credit Analysis Klasik',name:'Debt-to-Equity Ratio',
+  desc:'Mengukur proporsi pendanaan perusahaan dari UTANG dibanding EKUITAS — metrik leverage paling fundamental yang dipakai credit analyst untuk menilai risiko struktur modal sebelum melihat rasio yang lebih kompleks.',
+  tex:'D/E=\\frac{\\text{Total Debt}}{\\text{Total Equity}}',
+  vars:[
+    {k:'totaldebt',label:'Total Debt',min:0,max:1500,step:25,def:600,unit:'$M'},
+    {k:'totalequity2',label:'Total Equity',min:50,max:1500,step:25,def:400,unit:'$M'}
+  ],
+  calc(v){
+    const de = v.totaldebt/v.totalequity2;
+    const debtRatio = v.totaldebt/(v.totaldebt+v.totalequity2)*100;
+    const pts = sweep(0,1500,60,d=>d/v.totalequity2);
+    return {
+      big:fmtNum(de,2),bigUnit:'x',bigLabel:'Debt-to-Equity Ratio',
+      subs:[{l:'Debt Ratio (Debt/Total Capital)',v:fmtNum(debtRatio,1)+'%'},{l:'Total Debt',v:'$'+fmtNum(v.totaldebt,0)+'M'}],
+      note:{type: de>2?'warn':de<0.3?'info':'good', text: de>2?'D/E >2x: struktur modal SANGAT bergantung pada utang — risiko finansial tinggi, terutama jika cash flow operasional volatile atau suku bunga naik.':de<0.3?'D/E rendah (<0.3x): perusahaan sangat konservatif dalam memakai leverage — bisa jadi tidak optimal memanfaatkan tax shield dari utang, tapi risiko finansial sangat rendah.':'D/E berada di rentang moderat yang umum ditemukan di kebanyakan industri non-finansial yang sehat.'},
+      chart:{xMin:0,xMax:1500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totaldebt,hlines:[{y:1,color:COLORS.faint,dash:true},{y:2,color:COLORS.red,dash:true}],series:[{label:'D/E Ratio vs Total Debt',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'dscr',ch:3,year:1980,who:'Praktik Commercial Lending',name:'Debt Service Coverage Ratio (DSCR)',
+  desc:'Metrik standar yang dipakai BANK dan lender komersial untuk menilai apakah cash flow operasional perusahaan/proyek cukup untuk menutupi seluruh obligasi pembayaran utang (pokok + bunga) periode tersebut.',
+  tex:'DSCR=\\frac{\\text{Net Operating Income}}{\\text{Total Debt Service}}',
+  vars:[
+    {k:'noi',label:'Net Operating Income',min:20,max:500,step:5,def:200,unit:'$M'},
+    {k:'debtservice',label:'Total Debt Service (pokok+bunga)',min:10,max:300,step:5,def:80,unit:'$M'}
+  ],
+  calc(v){
+    const dscr = v.noi/v.debtservice;
+    const pts = sweep(10,300,60,ds=>v.noi/ds);
+    return {
+      big:fmtNum(dscr,2),bigUnit:'x',bigLabel:'Debt Service Coverage Ratio',
+      subs:[{l:'Net Operating Income',v:'$'+fmtNum(v.noi,1)+'M'},{l:'Total Debt Service',v:'$'+fmtNum(v.debtservice,1)+'M'}],
+      note:{type: dscr<1?'danger':dscr<1.25?'warn':'good', text: dscr<1?'DSCR <1: cash flow operasional TIDAK CUKUP menutupi obligasi utang periode ini — kondisi default risk akut, lender biasanya menolak pinjaman baru pada level ini.':dscr<1.25?'DSCR di rentang minimum yang biasa disyaratkan lender (1.0-1.25x) — buffer terbatas, sensitif terhadap penurunan NOI sekecil apapun.':'DSCR sehat (>1.25x) — memenuhi syarat covenant tipikal kebanyakan commercial loan agreement dengan buffer yang wajar.'},
+      chart:{xMin:10,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.debtservice,hlines:[{y:1,color:COLORS.red,dash:true},{y:1.25,color:COLORS.amber,dash:true}],series:[{label:'DSCR vs Total Debt Service',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'ltv',ch:3,year:1930,who:'Praktik Perbankan (Mortgage Lending)',name:'Loan-to-Value (LTV) Ratio',
+  desc:'Mengukur proporsi nilai aset (biasanya properti) yang didanai dari pinjaman — metrik risiko fundamental di lending berbasis collateral, semakin tinggi LTV semakin kecil "equity cushion" yang melindungi lender jika terjadi default.',
+  tex:'LTV=\\frac{\\text{Loan Amount}}{\\text{Appraised Asset Value}}',
+  vars:[
+    {k:'loanamt',label:'Loan Amount',min:50,max:1000,step:10,def:400,unit:'$K'},
+    {k:'assetval',label:'Appraised Asset Value',min:60,max:1200,step:10,def:500,unit:'$K'}
+  ],
+  calc(v){
+    const ltv = v.loanamt/v.assetval*100;
+    const equityCushion = 100-ltv;
+    const pts = sweep(60,1200,60,av=>v.loanamt/av*100);
+    return {
+      big:fmtNum(ltv,2),bigUnit:'%',bigLabel:'Loan-to-Value Ratio',
+      subs:[{l:'Equity Cushion',v:fmtNum(equityCushion,1)+'%'},{l:'Loan Amount',v:'$'+fmtNum(v.loanamt,0)+'K'}],
+      note:{type: ltv>90?'danger':ltv>80?'warn':'good', text: ltv>90?'LTV >90%: equity cushion sangat tipis (<10%) — penurunan kecil pada nilai aset bisa membuat lender berada dalam posisi "underwater" jika harus melikuidasi collateral.':ltv>80?'LTV di rentang 80-90%: lender umumnya akan mensyaratkan private mortgage insurance (PMI) atau premi risiko tambahan pada level ini.':'LTV sehat (<80%): equity cushion cukup besar untuk melindungi lender dari fluktuasi nilai aset yang moderat.'},
+      chart:{xMin:60,xMax:1200,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.assetval,hlines:[{y:80,color:COLORS.amber,dash:true},{y:90,color:COLORS.red,dash:true}],series:[{label:'LTV vs Appraised Value',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'creditspread',ch:3,year:1970,who:'Praktik Fixed Income Trading',name:'Credit Spread (Yield Spread)',
+  desc:'Selisih yield antara obligasi korporat dan obligasi pemerintah (risk-free) dengan maturity sama — mengukur PREMI RISIKO KREDIT yang dituntut investor untuk menanggung risiko default issuer korporat.',
+  tex:'\\text{Spread}=Y_{corp}-Y_{treasury}',
+  vars:[
+    {k:'corpyield',label:'Corporate Bond Yield',min:2,max:15,step:0.1,def:6.5,unit:'%'},
+    {k:'treasuryyield',label:'Treasury (Risk-Free) Yield',min:0.5,max:8,step:0.1,def:4,unit:'%'}
+  ],
+  calc(v){
+    const spreadPct = v.corpyield-v.treasuryyield;
+    const spreadBps = spreadPct*100;
+    const pts = sweep(0.5,8,60,ty=>(v.corpyield-ty)*100);
+    return {
+      big:fmtNum(spreadBps,0),bigUnit:' bps',bigLabel:'Credit Spread',
+      subs:[{l:'Dalam Persentase',v:fmtNum(spreadPct,2)+'%'},{l:'Corporate Yield',v:fmtNum(v.corpyield,2)+'%'}],
+      note:{type: spreadBps>400?'danger':spreadBps>200?'warn':'good', text: spreadBps>400?'Spread sangat lebar (>400bps): pasar memberi sinyal risiko kredit TINGGI pada issuer ini — biasanya terlihat pada obligasi high-yield/junk atau saat kondisi makro penuh stres (credit crunch).':spreadBps>200?'Spread moderat-tinggi (200-400bps): konsisten dengan obligasi investment-grade bawah hingga crossover ke high-yield — perlu analisis kredit lebih dalam.':'Spread relatif sempit (<200bps): konsisten dengan obligasi investment-grade berkualitas baik, pasar menilai risiko default rendah.'},
+      chart:{xMin:0.5,xMax:8,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.treasuryyield,hlines:[{y:200,color:COLORS.amber,dash:true},{y:400,color:COLORS.red,dash:true}],series:[{label:'Credit Spread vs Treasury Yield',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'convexity',ch:3,year:1984,who:'Stanley Diller (formalisasi akademik)',name:'Bond Convexity (Konsep Koreksi Duration)',
+  desc:'Duration adalah aproksimasi LINEAR dari hubungan harga-yield obligasi, tapi hubungan sebenarnya CEMBUNG (convex) — convexity mengkoreksi estimasi duration agar lebih akurat, terutama untuk perubahan yield yang besar.',
+  tex:'\\%\\Delta P \\approx -D_{mod}\\Delta y+\\frac{1}{2}\\times \\text{Convexity}\\times(\\Delta y)^2',
+  vars:[
+    {k:'moddur2',label:'Modified Duration',min:1,max:20,step:0.5,def:7,unit:' thn'},
+    {k:'convexity2',label:'Convexity',min:10,max:300,step:5,def:80,unit:''},
+    {k:'yieldchange',label:'Perubahan Yield (Δy)',min:-3,max:3,step:0.1,def:1,unit:'%'}
+  ],
+  calc(v){
+    const dy = v.yieldchange/100;
+    const durationEffect = -v.moddur2*dy*100;
+    const convexityEffect = 0.5*v.convexity2*dy*dy*100;
+    const totalEffect = durationEffect+convexityEffect;
+    const linearOnly = durationEffect;
+    const pts = sweep(-3,3,60,yc=>{
+      const d=yc/100;
+      return (-v.moddur2*d*100)+(0.5*v.convexity2*d*d*100);
+    });
+    return {
+      big: (totalEffect>=0?'+':'')+fmtNum(totalEffect,3),bigUnit:'%',bigLabel:'Estimasi Δ Harga (Duration + Convexity)',
+      subs:[{l:'Efek Duration Saja (Linear)',v:(durationEffect>=0?'+':'')+fmtNum(durationEffect,3)+'%'},{l:'Koreksi Convexity',v:'+'+fmtNum(convexityEffect,3)+'%'}],
+      note:{type: Math.abs(v.yieldchange)>2?'warn':'info', text: Math.abs(v.yieldchange)>2?'Perubahan yield besar (>2%): pada level ini, estimasi DURATION SAJA (linear) menjadi tidak akurat — koreksi convexity menjadi material dan PENTING untuk diperhitungkan, terutama untuk obligasi dengan convexity tinggi.':'Koreksi convexity selalu POSITIF terhadap estimasi harga (bond convexity selalu menguntungkan holder) — meski untuk perubahan yield kecil, efeknya minor dibanding efek duration linear.'},
+      chart:{xMin:-3,xMax:3,yMin:Math.min(...pts.map(p=>p.y))-3,yMax:Math.max(...pts.map(p=>p.y))+3,vline:v.yieldchange,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Δ Harga vs Δ Yield (kurva convex)',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'currentyield',ch:3,year:1900,who:'Praktik Fixed Income Dasar',name:'Current Yield vs Yield to Maturity',
+  desc:'Current Yield adalah metrik SEDERHANA (kupon tahunan dibagi harga pasar saat ini) — TIDAK memperhitungkan capital gain/loss sampai maturity seperti YTM, sehingga sering menyesatkan jika dipakai sendirian untuk membandingkan obligasi.',
+  tex:'\\text{Current Yield}=\\frac{\\text{Annual Coupon}}{\\text{Market Price}}',
+  vars:[
+    {k:'fv4',label:'Face Value',min:500,max:2000,step:50,def:1000,unit:'$'},
+    {k:'cr4',label:'Coupon Rate',min:0,max:12,step:0.25,def:7,unit:'%'},
+    {k:'mktprice2',label:'Harga Pasar',min:600,max:1400,step:10,def:900,unit:'$'}
+  ],
+  calc(v){
+    const annualCoupon = v.fv4*v.cr4/100;
+    const currentYield = annualCoupon/v.mktprice2*100;
+    const impliedCapGain = (v.fv4-v.mktprice2)/v.mktprice2*100;
+    const pts = sweep(600,1400,60,p=>annualCoupon/p*100);
+    return {
+      big:fmtNum(currentYield,3),bigUnit:'%',bigLabel:'Current Yield',
+      subs:[{l:'Annual Coupon',v:'$'+fmtNum(annualCoupon,2)},{l:'Implied Capital Gain ke Par',v:(impliedCapGain>=0?'+':'')+fmtNum(impliedCapGain,2)+'%'}],
+      note:{type: Math.abs(impliedCapGain)>10?'warn':'info', text: Math.abs(impliedCapGain)>10?'Selisih harga pasar dengan par CUKUP BESAR (>10%): Current Yield akan SANGAT MENYESATKAN sebagai estimasi return total — gunakan YTM yang memperhitungkan capital gain/loss menuju par saat maturity.':'Current Yield relatif representatif karena harga pasar tidak terlalu jauh dari par — tapi tetap, YTM adalah metrik yang lebih lengkap dan akurat untuk perbandingan antar obligasi.'},
+      chart:{xMin:600,xMax:1400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.mktprice2,hlines:[{y:v.cr4,color:COLORS.faint,dash:true}],series:[{label:'Current Yield vs Harga Pasar',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'zspread',ch:3,year:1990,who:'Praktik Structured Finance',name:'Z-Spread (Zero-Volatility Spread)',
+  desc:'Spread konstan yang ditambahkan ke SETIAP titik di yield curve risk-free (bukan cuma satu titik seperti nominal spread) sehingga PV cash flow obligasi sama dengan harga pasarnya — lebih akurat dari nominal spread sederhana untuk yield curve yang tidak flat.',
+  tex:'P_{market}=\\sum_{t=1}^{n}\\frac{C_t}{(1+r_t+Z)^t}',
+  vars:[
+    {k:'nominalspread',label:'Nominal Spread (estimasi awal)',min:50,max:500,step:10,def:200,unit:' bps'},
+    {k:'curvesteep',label:'Steepness Yield Curve',min:0,max:200,step:10,def:80,unit:' bps (10y-2y)'}
+  ],
+  calc(v){
+    // Z-spread approximation: wider than nominal spread when curve is steep, due to averaging effect across maturities
+    const zSpreadEstimate = v.nominalspread + (v.curvesteep*0.15);
+    const pts = sweep(0,200,60,steep=>v.nominalspread+(steep*0.15));
+    return {
+      big:fmtNum(zSpreadEstimate,0),bigUnit:' bps',bigLabel:'Z-Spread (Estimasi)',
+      subs:[{l:'Nominal Spread',v:fmtNum(v.nominalspread,0)+' bps'},{l:'Selisih Z-Spread vs Nominal',v:'+'+fmtNum(zSpreadEstimate-v.nominalspread,0)+' bps'}],
+      note:{type: v.curvesteep>100?'warn':'info', text: v.curvesteep>100?'Yield curve cukup steep (>100bps antara 2yr-10yr): perbedaan antara Z-spread dan nominal spread menjadi MATERIAL — nominal spread sederhana akan understate risiko kredit sesungguhnya pada kondisi curve seperti ini.':'Yield curve relatif flat: Z-spread dan nominal spread cenderung tidak jauh berbeda, nominal spread sederhana masih cukup representatif sebagai estimasi cepat.'},
+      chart:{xMin:0,xMax:200,yMin:v.nominalspread-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.curvesteep,series:[{label:'Z-Spread vs Curve Steepness',color:COLORS.violet,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 4: CORPORATE FINANCE & CAPITAL STRUCTURE (11) ===================== */
+addF([
+{
+  id:'wacc',ch:4,year:1958,who:'Franco Modigliani & Merton Miller',name:'Weighted Average Cost of Capital (WACC)',
+  desc:'Rata-rata tertimbang biaya modal dari SEMUA sumber pendanaan perusahaan (ekuitas dan utang) — discount rate standar yang dipakai untuk menilai apakah sebuah proyek/investasi menciptakan nilai bagi seluruh penyedia modal.',
+  tex:'WACC=\\frac{E}{V}R_e+\\frac{D}{V}R_d(1-T_c)',
+  vars:[
+    {k:'equityval',label:'Market Value of Equity (E)',min:100,max:2000,step:25,def:600,unit:'$M'},
+    {k:'debtval',label:'Market Value of Debt (D)',min:0,max:1500,step:25,def:400,unit:'$M'},
+    {k:'costequity',label:'Cost of Equity (Re)',min:4,max:25,step:0.25,def:12,unit:'%'},
+    {k:'costdebt',label:'Cost of Debt (Rd, pre-tax)',min:1,max:15,step:0.25,def:6,unit:'%'},
+    {k:'taxrate',label:'Tax Rate',min:0,max:40,step:1,def:25,unit:'%'}
+  ],
+  calc(v){
+    const V = v.equityval+v.debtval;
+    const weE = v.equityval/V, weD = v.debtval/V;
+    const wacc = weE*v.costequity + weD*v.costdebt*(1-v.taxrate/100);
+    const taxShield = weD*v.costdebt*(v.taxrate/100);
+    const pts = sweep(0,1500,60,d=>{
+      const v2=v.equityval+d;
+      return (v.equityval/v2)*v.costequity + (d/v2)*v.costdebt*(1-v.taxrate/100);
+    });
+    return {
+      big:fmtNum(wacc,3),bigUnit:'%',bigLabel:'WACC',
+      subs:[{l:'Weight Equity',v:fmtNum(weE*100,1)+'%'},{l:'Weight Debt',v:fmtNum(weD*100,1)+'%'},{l:'Tax Shield Benefit',v:fmtNum(taxShield,3)+'pp'}],
+      note:{type: weD>0.7?'warn':weD<0.1?'info':'good', text: weD>0.7?'Proporsi debt sangat tinggi (>70% dari total capital): WACC rendah karena tax shield, tapi risiko finansial dan kemungkinan financial distress meningkat tajam — trade-off klasik Modigliani-Miller dengan friksi pajak dan bankruptcy cost.':weD<0.1?'Proporsi debt sangat rendah (<10%): perusahaan tidak banyak memanfaatkan tax shield dari utang — WACC relatif lebih tinggi dibanding struktur modal yang lebih optimal secara teori.':'Struktur modal berada di rentang yang umum dianggap "sehat" oleh kebanyakan perusahaan non-finansial.'},
+      chart:{xMin:0,xMax:1500,yMin:Math.min(...pts.map(p=>p.y))-1,yMax:Math.max(...pts.map(p=>p.y))+1,vline:v.debtval,series:[{label:'WACC vs Market Value of Debt',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'npv',ch:4,year:1907,who:'Irving Fisher',name:'Net Present Value (NPV)',
+  desc:'Aturan keputusan investasi paling fundamental dalam corporate finance: terima proyek jika NPV positif (menciptakan nilai), tolak jika negatif — menjumlahkan SEMUA cash flow proyek yang di-discount ke present value.',
+  tex:'NPV=\\sum_{t=0}^{n}\\frac{CF_t}{(1+r)^t}',
+  vars:[
+    {k:'initialinv',label:'Investasi Awal (CF₀)',min:200,max:3000,step:50,def:1000,unit:'$K'},
+    {k:'annualcf',label:'Cash Flow Tahunan (rata-rata)',min:50,max:800,step:10,def:350,unit:'$K'},
+    {k:'projyears',label:'Durasi Proyek',min:2,max:15,step:1,def:5,unit:' thn'},
+    {k:'discrate',label:'Discount Rate',min:2,max:25,step:0.5,def:10,unit:'%'}
+  ],
+  calc(v){
+    let npv = -v.initialinv;
+    for(let t=1;t<=v.projyears;t++){ npv += v.annualcf/Math.pow(1+v.discrate/100,t); }
+    const pts = sweep(2,25,60,r=>{
+      let n=-v.initialinv;
+      for(let t=1;t<=v.projyears;t++){ n+=v.annualcf/Math.pow(1+r/100,t); }
+      return n;
+    });
+    return {
+      big:(npv>=0?'+':'')+fmtNum(npv,1),bigUnit:'$K',bigLabel:'Net Present Value',
+      subs:[{l:'Total Undiscounted CF',v:'$'+fmtNum(v.annualcf*v.projyears,0)+'K'},{l:'Initial Investment',v:'$'+fmtNum(v.initialinv,0)+'K'}],
+      note:{type: npv<0?'danger':npv/v.initialinv<0.1?'warn':'good', text: npv<0?'NPV NEGATIF: proyek ini MENGHANCURKAN nilai pada discount rate ini — secara teori keuangan, proyek harus DITOLAK meski terlihat "untung" secara akuntansi kasar.':npv/v.initialinv<0.1?'NPV positif tapi margin keamanan tipis relatif terhadap initial investment — sensitif terhadap kesalahan estimasi cash flow atau discount rate.':'NPV solid positif — proyek menciptakan nilai signifikan relatif terhadap modal yang diinvestasikan, layak diterima.'},
+      chart:{xMin:2,xMax:25,yMin:Math.min(...pts.map(p=>p.y))-50,yMax:Math.max(...pts.map(p=>p.y))+50,vline:v.discrate,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'NPV vs Discount Rate',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'irr',ch:4,year:1955,who:'Joel Dean (popularisasi korporat)',name:'Internal Rate of Return (IRR)',
+  desc:'Discount rate yang membuat NPV proyek TEPAT NOL — secara intuitif, ini adalah "return rate" yang dihasilkan proyek itu sendiri. Aturan: terima proyek jika IRR > cost of capital (hurdle rate).',
+  tex:'0=\\sum_{t=0}^{n}\\frac{CF_t}{(1+IRR)^t}',
+  vars:[
+    {k:'initialinv2',label:'Investasi Awal',min:200,max:3000,step:50,def:1000,unit:'$K'},
+    {k:'annualcf2',label:'Cash Flow Tahunan',min:50,max:800,step:10,def:300,unit:'$K'},
+    {k:'projyears2',label:'Durasi Proyek',min:2,max:15,step:1,def:5,unit:' thn'},
+    {k:'hurdlerate',label:'Hurdle Rate (cost of capital)',min:2,max:25,step:0.5,def:10,unit:'%'}
+  ],
+  calc(v){
+    function npvAt(r){
+      let n=-v.initialinv2;
+      for(let t=1;t<=v.projyears2;t++){ n+=v.annualcf2/Math.pow(1+r,t); }
+      return n;
+    }
+    let lo=0.0001, hi=2;
+    for(let i=0;i<80;i++){
+      const mid=(lo+hi)/2;
+      if(npvAt(mid)>0) lo=mid; else hi=mid;
+    }
+    const irr = (lo+hi)/2*100;
+    const spread = irr-v.hurdlerate;
+    const pts = sweep(50,800,60,cf=>{
+      function npvAt2(r){ let n=-v.initialinv2; for(let t=1;t<=v.projyears2;t++){ n+=cf/Math.pow(1+r,t); } return n; }
+      let l=0.0001,h=2;
+      for(let i=0;i<60;i++){ const m=(l+h)/2; if(npvAt2(m)>0) l=m; else h=m; }
+      return (l+h)/2*100;
+    });
+    return {
+      big:fmtNum(irr,2),bigUnit:'%',bigLabel:'Internal Rate of Return',
+      subs:[{l:'Hurdle Rate',v:fmtNum(v.hurdlerate,2)+'%'},{l:'IRR - Hurdle Rate',v:(spread>=0?'+':'')+fmtNum(spread,2)+'pp'}],
+      note:{type: spread<0?'danger':spread<3?'warn':'good', text: spread<0?'IRR LEBIH RENDAH dari hurdle rate: proyek menghasilkan return di bawah biaya modal — secara teori harus DITOLAK, meski terlihat menarik dari sisi nominal cash flow.':spread<3?'IRR sedikit di atas hurdle rate: proyek layak diterima tapi margin keamanan tipis terhadap kesalahan estimasi.':'IRR jauh melampaui hurdle rate — proyek sangat menarik secara return, asalkan asumsi cash flow realistis.'},
+      chart:{xMin:50,xMax:800,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.annualcf2,hlines:[{y:v.hurdlerate,color:COLORS.red,dash:true}],series:[{label:'IRR vs Annual Cash Flow',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'paybackperiod',ch:4,year:1950,who:'Praktik Capital Budgeting Klasik',name:'Payback Period',
+  desc:'Metrik SEDERHANA yang mengukur berapa lama waktu dibutuhkan untuk cash flow proyek menutupi kembali investasi awal — populer karena mudah dipahami, tapi TIDAK memperhitungkan time value of money atau cash flow setelah payback tercapai.',
+  tex:'\\text{Payback}=\\text{Tahun terakhir CF negatif}+\\frac{|\\text{Sisa CF negatif}|}{\\text{CF tahun berikutnya}}',
+  vars:[
+    {k:'initialinv3',label:'Investasi Awal',min:200,max:3000,step:50,def:1000,unit:'$K'},
+    {k:'annualcf3',label:'Cash Flow Tahunan (konstan)',min:50,max:800,step:10,def:300,unit:'$K'}
+  ],
+  calc(v){
+    const payback = v.initialinv3/v.annualcf3;
+    const pts = sweep(50,800,60,cf=>v.initialinv3/cf);
+    return {
+      big:fmtNum(payback,2),bigUnit:' thn',bigLabel:'Payback Period',
+      subs:[{l:'Investasi Awal',v:'$'+fmtNum(v.initialinv3,0)+'K'},{l:'CF Tahunan',v:'$'+fmtNum(v.annualcf3,0)+'K'}],
+      note:{type: payback>5?'warn':'info', text: payback>5?'Payback period panjang (>5 tahun): risiko ketidakpastian jangka panjang lebih besar, dan metrik ini SAMA SEKALI tidak memperhitungkan time value of money — gunakan NPV/IRR sebagai pelengkap analisis, jangan andalkan payback period sendirian.':'Ingat keterbatasan fundamental metrik ini: payback period mengabaikan SEMUA cash flow setelah titik payback tercapai, dan tidak men-discount cash flow — dua proyek dengan payback period sama bisa punya NPV yang sangat berbeda.'},
+      chart:{xMin:50,xMax:800,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.annualcf3,series:[{label:'Payback Period vs Cash Flow Tahunan',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'breakeven',ch:4,year:1930,who:'Walter Rautenstrauch (cost-volume-profit analysis)',name:'Break-Even Point Analysis',
+  desc:'Menghitung volume penjualan minimum yang dibutuhkan agar perusahaan/produk mencapai titik impas (profit=0) — fondasi cost-volume-profit (CVP) analysis yang dipakai untuk perencanaan operasional dan pricing.',
+  tex:'Q_{BE}=\\frac{\\text{Fixed Costs}}{\\text{Price} - \\text{Variable Cost per Unit}}',
+  vars:[
+    {k:'fixedcosts2',label:'Fixed Costs',min:5000,max:200000,step:1000,def:50000,unit:'$'},
+    {k:'priceunit',label:'Price per Unit',min:5,max:200,step:1,def:40,unit:'$'},
+    {k:'varcostunit',label:'Variable Cost per Unit',min:1,max:150,step:1,def:25,unit:'$'}
+  ],
+  calc(v){
+    const contributionMargin = v.priceunit-v.varcostunit;
+    const breakevenUnits = v.fixedcosts2/contributionMargin;
+    const breakevenRevenue = breakevenUnits*v.priceunit;
+    const cmRatio = contributionMargin/v.priceunit*100;
+    const pts = sweep(1,150,60,vc=>{ const cm=v.priceunit-vc; return cm>0.5? v.fixedcosts2/cm : null; }).filter(p=>p.y!==null && p.y<breakevenUnits*10);
+    return {
+      big:fmtNum(breakevenUnits,0),bigUnit:' unit',bigLabel:'Break-Even Quantity',
+      subs:[{l:'Break-Even Revenue',v:'$'+fmtNum(breakevenRevenue,0)},{l:'Contribution Margin Ratio',v:fmtNum(cmRatio,1)+'%'}],
+      note:{type: cmRatio<20?'warn':'good', text: cmRatio<20?'Contribution margin ratio rendah (<20%): perusahaan butuh VOLUME besar untuk menutupi fixed cost — model bisnis ini sangat sensitif terhadap fluktuasi volume penjualan.':'Contribution margin ratio sehat — setiap unit terjual memberikan kontribusi yang relatif besar untuk menutupi fixed cost dan menghasilkan profit setelah break-even tercapai.'},
+      chart:{xMin:1,xMax:150,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.varcostunit,series:[{label:'Break-Even Units vs Variable Cost',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'maaccretion',ch:4,year:1980,who:'Praktik M&A Investment Banking',name:'M&A EPS Accretion/Dilution',
+  desc:'Menentukan apakah sebuah akuisisi akan MENAMBAH (accretive) atau MENGURANGI (dilutive) EPS perusahaan pengakuisisi — metrik krusial yang sering jadi headline pertimbangan dalam pengumuman M&A, meski tidak selalu mencerminkan value creation sesungguhnya.',
+  tex:'\\%\\Delta EPS=\\frac{\\text{Pro Forma EPS}-\\text{Acquirer EPS}}{\\text{Acquirer EPS}}',
+  vars:[
+    {k:'acqeps',label:'Acquirer EPS (sebelum deal)',min:0.5,max:10,step:0.1,def:3,unit:'$'},
+    {k:'acqshares',label:'Acquirer Shares Outstanding',min:20,max:500,step:5,def:100,unit:'M'},
+    {k:'targetni',label:'Target Net Income',min:10,max:300,step:5,def:100,unit:'$M'},
+    {k:'newsharesissued',label:'New Shares Issued untuk Deal',min:0,max:300,step:5,def:25,unit:'M'}
+  ],
+  calc(v){
+    const acquirerNI = v.acqeps*v.acqshares;
+    const combinedNI = acquirerNI+v.targetni;
+    const totalShares = v.acqshares+v.newsharesissued;
+    const proFormaEPS = combinedNI/totalShares;
+    const accDil = (proFormaEPS-v.acqeps)/v.acqeps*100;
+    const pts = sweep(0,300,60,ns=>{
+      const ts=v.acqshares+ns;
+      return ((combinedNI/ts)-v.acqeps)/v.acqeps*100;
+    });
+    return {
+      big:(accDil>=0?'+':'')+fmtNum(accDil,2),bigUnit:'%',bigLabel:'EPS Accretion/(Dilution)',
+      subs:[{l:'Pro Forma EPS',v:'$'+fmtNum(proFormaEPS,3)},{l:'Acquirer EPS (sebelum)',v:'$'+fmtNum(v.acqeps,2)},{l:'Status',v: accDil>=0?'ACCRETIVE':'DILUTIVE'}],
+      note:{type: accDil<0?'warn':'good', text: accDil<0?'Deal ini DILUTIVE terhadap EPS — meski demikian, dilutive TIDAK SELALU berarti deal buruk secara value creation. Sinergi jangka panjang, strategic fit, atau growth target yang lebih tinggi bisa membenarkan dilusi EPS jangka pendek.':'Deal ini ACCRETIVE terhadap EPS — tapi tetap waspada: accretion bisa terjadi murni dari mekanika P/E arbitrage (membeli target dengan P/E lebih rendah), bukan dari sinergi operasional nyata.'},
+      chart:{xMin:0,xMax:300,yMin:Math.min(...pts.map(p=>p.y))-2,yMax:Math.max(...pts.map(p=>p.y))+2,vline:v.newsharesissued,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'EPS Accretion vs New Shares Issued',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'mmproptwo',ch:4,year:1963,who:'Modigliani & Miller (versi dengan pajak)',name:'Modigliani-Miller Proposition II (with Taxes)',
+  desc:'Menunjukkan bagaimana cost of equity NAIK secara linear seiring leverage bertambah — karena risiko finansial yang ditanggung pemegang saham meningkat, meski WACC bisa menurun karena tax shield dari utang.',
+  tex:'R_e=R_u+(R_u-R_d)(1-T_c)\\frac{D}{E}',
+  vars:[
+    {k:'ru',label:'Unlevered Cost of Equity (Rᵤ)',min:5,max:20,step:0.25,def:12,unit:'%'},
+    {k:'rd2',label:'Cost of Debt (Rd)',min:1,max:12,step:0.25,def:6,unit:'%'},
+    {k:'tc2',label:'Tax Rate',min:0,max:40,step:1,def:25,unit:'%'},
+    {k:'detarget',label:'D/E Ratio',min:0,max:4,step:0.1,def:1.5,unit:'x'}
+  ],
+  calc(v){
+    const reLevered = v.ru+(v.ru-v.rd2)*(1-v.tc2/100)*v.detarget;
+    const riskPremium = reLevered-v.ru;
+    const pts = sweep(0,4,60,de=>v.ru+(v.ru-v.rd2)*(1-v.tc2/100)*de);
+    return {
+      big:fmtNum(reLevered,2),bigUnit:'%',bigLabel:'Levered Cost of Equity',
+      subs:[{l:'Unlevered Cost of Equity',v:fmtNum(v.ru,2)+'%'},{l:'Risk Premium dari Leverage',v:'+'+fmtNum(riskPremium,2)+'pp'}],
+      note:{type: v.detarget>2.5?'warn':'info', text: v.detarget>2.5?'D/E target tinggi (>2.5x): cost of equity meningkat signifikan akibat financial risk premium — pemegang saham menuntut return lebih tinggi untuk menanggung volatility tambahan dari leverage besar.':'Hubungan linear antara D/E dan cost of equity ini adalah inti argumen MM Prop II — leverage TIDAK "gratis", trade-off antara tax shield (WACC turun) dan financial risk (cost of equity naik) harus selalu dipertimbangkan bersama.'},
+      chart:{xMin:0,xMax:4,yMin:v.ru-1,yMax:Math.max(...pts.map(p=>p.y))+1,vline:v.detarget,hlines:[{y:v.ru,color:COLORS.faint,dash:true}],series:[{label:'Levered Cost of Equity vs D/E',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'dividendpayout',ch:4,year:1956,who:'John Lintner',name:'Dividend Payout Ratio & Retention Rate',
+  desc:'Mengukur proporsi laba bersih yang didistribusikan sebagai dividen versus yang DITAHAN (retained) untuk reinvestasi — Lintner mengamati perusahaan cenderung menjaga payout ratio relatif stabil (dividend smoothing) meski earnings volatile.',
+  tex:'\\text{Payout Ratio}=\\frac{\\text{Dividends}}{\\text{Net Income}},\\quad \\text{Retention}=1-\\text{Payout}',
+  vars:[
+    {k:'totaldividends',label:'Total Dividends Dibayarkan',min:0,max:300,step:5,def:60,unit:'$M'},
+    {k:'netincome2',label:'Net Income',min:50,max:500,step:10,def:150,unit:'$M'}
+  ],
+  calc(v){
+    const payoutRatio = v.totaldividends/v.netincome2*100;
+    const retentionRate = 100-payoutRatio;
+    const sustainableGrowth = (retentionRate/100)*0.15*100; // assume ROE=15% for illustration
+    const pts = sweep(0,300,60,d=>d/v.netincome2*100);
+    return {
+      big:fmtNum(payoutRatio,2),bigUnit:'%',bigLabel:'Dividend Payout Ratio',
+      subs:[{l:'Retention Rate',v:fmtNum(retentionRate,2)+'%'},{l:'Total Dividends',v:'$'+fmtNum(v.totaldividends,1)+'M'}],
+      note:{type: payoutRatio>100?'danger':payoutRatio>80?'warn':'good', text: payoutRatio>100?'Payout ratio >100%: perusahaan membayar dividen LEBIH BESAR dari net income — tidak sustainable jangka panjang kecuali didanai dari cash reserves atau utang baru.':payoutRatio>80?'Payout ratio tinggi (>80%): sedikit modal yang ditahan untuk reinvestasi — cocok untuk perusahaan matang dengan growth opportunity terbatas, tapi membatasi kemampuan ekspansi organik.':'Payout ratio di rentang moderat — perusahaan menyeimbangkan antara memberi return ke shareholder dan menahan modal untuk reinvestasi/growth.'},
+      chart:{xMin:0,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totaldividends,hlines:[{y:100,color:COLORS.red,dash:true}],series:[{label:'Payout Ratio vs Total Dividends',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'fcffmodel',ch:4,year:1986,who:'Alfred Rappaport',name:'Free Cash Flow to Firm (FCFF)',
+  desc:'Mengukur cash flow yang tersedia untuk SEMUA penyedia modal (pemegang saham DAN kreditur) sebelum pembiayaan — basis untuk valuasi Enterprise Value, berbeda dari FCFE yang sudah memperhitungkan pembiayaan utang.',
+  tex:'FCFF=EBIT(1-T_c)+\\text{Dep}-\\text{CapEx}-\\Delta NWC',
+  vars:[
+    {k:'ebit4',label:'EBIT',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'taxrate3',label:'Tax Rate',min:0,max:40,step:1,def:25,unit:'%'},
+    {k:'dep2',label:'Depreciation',min:10,max:150,step:5,def:50,unit:'$M'},
+    {k:'capex2',label:'CapEx',min:10,max:250,step:5,def:80,unit:'$M'},
+    {k:'nwcchg2',label:'Δ Net Working Capital',min:-30,max:60,step:5,def:15,unit:'$M'}
+  ],
+  calc(v){
+    const nopat = v.ebit4*(1-v.taxrate3/100);
+    const fcff = nopat+v.dep2-v.capex2-v.nwcchg2;
+    const reinvestmentRate = (v.capex2+v.nwcchg2-v.dep2)/nopat*100;
+    const pts = sweep(10,250,60,cx=>nopat+v.dep2-cx-v.nwcchg2);
+    return {
+      big:fmtNum(fcff,2),bigUnit:'$M',bigLabel:'Free Cash Flow to Firm',
+      subs:[{l:'NOPAT',v:'$'+fmtNum(nopat,1)+'M'},{l:'Reinvestment Rate',v:fmtNum(reinvestmentRate,1)+'%'}],
+      note:{type: fcff<0?'danger':fcff<nopat*0.2?'warn':'good', text: fcff<0?'FCFF NEGATIF: perusahaan sedang berinvestasi (capex+NWC) lebih besar dari NOPAT+depresiasi yang dihasilkan — umum terjadi di fase ekspansi/growth tinggi, tapi tidak bisa berlanjut selamanya tanpa pendanaan eksternal.':fcff<nopat*0.2?'FCFF relatif kecil dibanding NOPAT: porsi besar laba operasi "terkunci" kembali ke reinvestment — wajar untuk perusahaan growth, tapi periksa apakah reinvestment menghasilkan return yang sepadan.':'FCFF solid relatif terhadap NOPAT — perusahaan menghasilkan cash flow signifikan SETELAH memenuhi kebutuhan reinvestasi untuk pertumbuhan.'},
+      chart:{xMin:10,xMax:250,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.capex2,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'FCFF vs CapEx',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'operatingcycle',ch:4,year:1900,who:'Praktik Manajemen Modal Kerja',name:'Operating Cycle vs Cash Cycle',
+  desc:'Operating Cycle mengukur total waktu dari pembelian inventory sampai menerima cash dari penjualan — Cash Cycle (dari Bab 1) lebih ketat karena memperhitungkan kapan perusahaan SENDIRI harus membayar suppliernya.',
+  tex:'\\text{Operating Cycle}=DIO+DSO',
+  vars:[
+    {k:'dio2',label:'Days Inventory Outstanding',min:5,max:120,step:1,def:40,unit:' hr'},
+    {k:'dso2',label:'Days Sales Outstanding',min:5,max:90,step:1,def:35,unit:' hr'}
+  ],
+  calc(v){
+    const operatingCycle = v.dio2+v.dso2;
+    const pts = sweep(5,90,60,dso=>v.dio2+dso);
+    return {
+      big:fmtNum(operatingCycle,1),bigUnit:' hari',bigLabel:'Operating Cycle',
+      subs:[{l:'DIO',v:fmtNum(v.dio2,0)+' hr'},{l:'DSO',v:fmtNum(v.dso2,0)+' hr'}],
+      note:{type: operatingCycle>100?'warn':'info', text: operatingCycle>100?'Operating cycle panjang (>100 hari): modal terkunci cukup lama dari pembelian inventory sampai cash diterima dari pelanggan — bandingkan dengan DPO (days payable) untuk melihat apakah perusahaan punya cash cycle yang sehat (lihat formula Cash Conversion Cycle di Bab 1).':'Operating cycle dalam rentang yang umum untuk kebanyakan industri manufaktur/retail — kombinasikan dengan DPO untuk analisis cash cycle yang lebih lengkap.'},
+      chart:{xMin:5,xMax:90,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.dso2,series:[{label:'Operating Cycle vs DSO',color:COLORS.cyan,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 5: EQUITY RESEARCH & MARKETS (11) ===================== */
+addF([
+{
+  id:'dilutedeps',ch:5,year:1969,who:'APB Opinion No. 15 (standar akuntansi AS)',name:'Basic vs Diluted EPS',
+  desc:'Diluted EPS memperhitungkan EFEK DILUSI dari instrumen konversi (stock options, convertible bonds, warrants) jika semuanya dikonversi menjadi saham biasa — selalu LEBIH KECIL atau SAMA dengan Basic EPS, dan adalah angka yang lebih konservatif untuk valuasi.',
+  tex:'\\text{Diluted EPS}=\\frac{NI-\\text{Preferred Div}}{\\text{Basic Shares}+\\text{Dilutive Shares}}',
+  vars:[
+    {k:'ni4',label:'Net Income',min:20,max:500,step:5,def:100,unit:'$M'},
+    {k:'preddiv',label:'Preferred Dividends',min:0,max:50,step:1,def:5,unit:'$M'},
+    {k:'basicshares',label:'Basic Shares Outstanding',min:10,max:500,step:5,def:50,unit:'M'},
+    {k:'dilutiveshares',label:'Dilutive Shares (options/converts)',min:0,max:100,step:1,def:8,unit:'M'}
+  ],
+  calc(v){
+    const basicEPS = (v.ni4-v.preddiv)/v.basicshares;
+    const dilutedEPS = (v.ni4-v.preddiv)/(v.basicshares+v.dilutiveshares);
+    const dilutionPct = (basicEPS-dilutedEPS)/basicEPS*100;
+    const pts = sweep(0,100,60,ds=>(v.ni4-v.preddiv)/(v.basicshares+ds));
+    return {
+      big:fmtNum(dilutedEPS,3),bigUnit:'',bigLabel:'Diluted EPS',
+      subs:[{l:'Basic EPS',v:'$'+fmtNum(basicEPS,3)},{l:'Dilution Effect',v:'-'+fmtNum(dilutionPct,2)+'%'}],
+      note:{type: dilutionPct>15?'warn':'info', text: dilutionPct>15?'Dilution effect besar (>15%): perusahaan punya banyak stock options/convertible securities outstanding — investor harus selalu memakai Diluted EPS (bukan Basic) untuk valuasi P/E yang lebih konservatif dan akurat.':'Dilution effect relatif kecil — selisih antara Basic dan Diluted EPS tidak terlalu material untuk keputusan valuasi.'},
+      chart:{xMin:0,xMax:100,yMin:0,yMax:basicEPS*1.1,vline:v.dilutiveshares,hlines:[{y:basicEPS,color:COLORS.faint,dash:true}],series:[{label:'Diluted EPS vs Dilutive Shares',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'earningsyield',ch:5,year:1930,who:'Praktik Value Investing Klasik',name:'Earnings Yield (Inverse P/E)',
+  desc:'Kebalikan dari P/E ratio — menyatakan return yang "didapat" investor relatif terhadap harga, dalam bentuk yang mudah dibandingkan LANGSUNG dengan yield instrumen lain seperti obligasi pemerintah, dipopulerkan dalam strategi "Earnings Yield Gap".',
+  tex:'\\text{Earnings Yield}=\\frac{EPS}{\\text{Price}}=\\frac{1}{P/E}',
+  vars:[
+    {k:'eps3',label:'Earnings per Share',min:0.5,max:15,step:0.1,def:4,unit:'$'},
+    {k:'price3',label:'Harga Saham',min:5,max:300,step:1,def:60,unit:'$'},
+    {k:'bondyield',label:'Yield Obligasi Pemerintah 10Y',min:1,max:8,step:0.1,def:4,unit:'%'}
+  ],
+  calc(v){
+    const earningsYield = v.eps3/v.price3*100;
+    const yieldGap = earningsYield-v.bondyield;
+    const pts = sweep(5,300,60,p=>v.eps3/p*100);
+    return {
+      big:fmtNum(earningsYield,2),bigUnit:'%',bigLabel:'Earnings Yield',
+      subs:[{l:'Implied P/E',v:fmtNum(v.price3/v.eps3,2)+'x'},{l:'Yield Gap vs Obligasi 10Y',v:(yieldGap>=0?'+':'')+fmtNum(yieldGap,2)+'pp'}],
+      note:{type: yieldGap<0?'warn':yieldGap>4?'good':'info', text: yieldGap<0?'Earnings Yield LEBIH RENDAH dari yield obligasi pemerintah: saham secara relatif "mahal" dibanding fixed income — investor membayar premium untuk potensi growth, perlu yakin growth tersebut bisa terealisasi.':yieldGap>4?'Yield gap besar (>4pp): saham terlihat relatif murah dibanding obligasi — sinyal klasik value investing, meski perlu verifikasi kualitas earnings (lihat Accrual Ratio di Bab 1).':'Yield gap dalam rentang yang wajar secara historis untuk perbandingan ekuitas vs fixed income.'},
+      chart:{xMin:5,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.price3,hlines:[{y:v.bondyield,color:COLORS.faint,dash:true}],series:[{label:'Earnings Yield vs Harga Saham',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'roic',ch:5,year:1980,who:'Praktik Corporate Performance Analysis',name:'Return on Invested Capital (ROIC)',
+  desc:'Mengukur efisiensi perusahaan menghasilkan profit dari SELURUH modal yang diinvestasikan (utang+ekuitas) — metrik kunci untuk membandingkan ROIC dengan WACC: jika ROIC>WACC, perusahaan menciptakan nilai ekonomis (lihat EVA di Bab 2).',
+  tex:'ROIC=\\frac{NOPAT}{\\text{Invested Capital}}',
+  vars:[
+    {k:'nopat3',label:'NOPAT',min:20,max:400,step:5,def:100,unit:'$M'},
+    {k:'investedcap2',label:'Invested Capital',min:100,max:2000,step:25,def:700,unit:'$M'},
+    {k:'waccref',label:'WACC (untuk komparasi)',min:4,max:18,step:0.25,def:9,unit:'%'}
+  ],
+  calc(v){
+    const roic = v.nopat3/v.investedcap2*100;
+    const spread = roic-v.waccref;
+    const pts = sweep(100,2000,60,ic=>v.nopat3/ic*100);
+    return {
+      big:fmtNum(roic,2),bigUnit:'%',bigLabel:'Return on Invested Capital',
+      subs:[{l:'WACC',v:fmtNum(v.waccref,2)+'%'},{l:'ROIC - WACC Spread',v:(spread>=0?'+':'')+fmtNum(spread,2)+'pp'}],
+      note:{type: spread<0?'danger':spread<2?'warn':'good', text: spread<0?'ROIC < WACC: perusahaan menghancurkan nilai ekonomis — setiap dollar modal baru yang diinvestasikan menghasilkan return LEBIH KECIL dari biaya modalnya sendiri.':spread<2?'Spread ROIC-WACC positif tapi tipis: margin keamanan ekonomis terbatas, perusahaan hampir di titik breakeven value creation.':'Spread ROIC-WACC besar dan positif: perusahaan secara konsisten menciptakan nilai ekonomis riil bagi seluruh penyedia modalnya.'},
+      chart:{xMin:100,xMax:2000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.investedcap2,hlines:[{y:v.waccref,color:COLORS.red,dash:true}],series:[{label:'ROIC vs Invested Capital',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'hamadabeta',ch:5,year:1972,who:'Robert Hamada',name:'Hamada Equation (Levered vs Unlevered Beta)',
+  desc:'Memisahkan risiko BISNIS (unlevered beta) dari risiko FINANSIAL akibat leverage — krusial untuk membandingkan risiko sistematis antar perusahaan dengan struktur modal berbeda, dan untuk re-levering beta peer saat membangun WACC perusahaan target.',
+  tex:'\\beta_L=\\beta_U\\times[1+(1-T_c)\\frac{D}{E}]',
+  vars:[
+    {k:'betaunlevered',label:'Unlevered Beta (βᵤ)',min:0.3,max:2,step:0.05,def:0.8,unit:''},
+    {k:'taxrate4',label:'Tax Rate',min:0,max:40,step:1,def:25,unit:'%'},
+    {k:'detarget2',label:'D/E Ratio',min:0,max:4,step:0.1,def:1.2,unit:'x'}
+  ],
+  calc(v){
+    const betaLevered = v.betaunlevered*(1+(1-v.taxrate4/100)*v.detarget2);
+    const riskAddon = betaLevered-v.betaunlevered;
+    const pts = sweep(0,4,60,de=>v.betaunlevered*(1+(1-v.taxrate4/100)*de));
+    return {
+      big:fmtNum(betaLevered,3),bigUnit:'',bigLabel:'Levered Beta (β_L)',
+      subs:[{l:'Unlevered Beta',v:fmtNum(v.betaunlevered,3)},{l:'Risk Add-on dari Leverage',v:'+'+fmtNum(riskAddon,3)}],
+      note:{type: betaLevered>1.8?'warn':'info', text: betaLevered>1.8?'Levered beta tinggi (>1.8): saham ini akan jauh lebih volatile dari pasar — kombinasi risiko bisnis dan leverage finansial membuat saham ini cocok untuk investor dengan toleransi risiko tinggi saja.':'Hamada Equation ini esensial saat melakukan comparable company analysis: SELALU unlever beta peer (hilangkan efek struktur modal mereka) sebelum re-lever dengan struktur modal target, supaya perbandingan risiko bisnis murni adil.'},
+      chart:{xMin:0,xMax:4,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.detarget2,hlines:[{y:v.betaunlevered,color:COLORS.faint,dash:true},{y:1,color:COLORS.cyan,dash:true}],series:[{label:'Levered Beta vs D/E Ratio',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'capm',ch:5,year:1964,who:'William Sharpe, John Lintner, Jan Mossin',name:'Capital Asset Pricing Model (CAPM)',
+  desc:'Model fundamental yang menghubungkan risiko SISTEMATIS (beta) sebuah aset dengan expected return-nya — landasan teori untuk menghitung cost of equity di WACC, dan basis untuk menilai apakah sebuah saham "fairly priced" relatif terhadap risikonya.',
+  tex:'E(R_i)=R_f+\\beta_i[E(R_m)-R_f]',
+  vars:[
+    {k:'rf3',label:'Risk-Free Rate',min:1,max:8,step:0.1,def:4,unit:'%'},
+    {k:'beta5',label:'Beta Saham',min:0.2,max:2.5,step:0.05,def:1.3,unit:''},
+    {k:'marketpremium',label:'Equity Risk Premium',min:3,max:10,step:0.25,def:6,unit:'%'}
+  ],
+  calc(v){
+    const expectedReturn = v.rf3+v.beta5*v.marketpremium;
+    const riskpremiumtotal = v.beta5*v.marketpremium;
+    const pts = sweep(0.2,2.5,60,b=>v.rf3+b*v.marketpremium);
+    return {
+      big:fmtNum(expectedReturn,2),bigUnit:'%',bigLabel:'Expected Return — CAPM',
+      subs:[{l:'Risk-Free Rate',v:fmtNum(v.rf3,2)+'%'},{l:'Risk Premium (β×ERP)',v:'+'+fmtNum(riskpremiumtotal,2)+'pp'}],
+      note:{type: v.beta5>1.5?'warn':v.beta5<0.7?'info':'good', text: v.beta5>1.5?'Beta tinggi (>1.5): saham ini secara historis bergerak jauh lebih agresif dari pasar — expected return tinggi sebagai kompensasi, tapi drawdown saat market turun juga akan lebih dalam.':v.beta5<0.7?'Beta rendah (<0.7): saham bersifat defensif, bergerak lebih moderat dari pasar secara keseluruhan — cocok untuk porsi portfolio yang mencari stabilitas relatif.':'Beta mendekati 1: saham bergerak secara proporsional dengan pasar secara keseluruhan, profil risiko sistematis "rata-rata".'},
+      chart:{xMin:0.2,xMax:2.5,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.beta5,hlines:[{y:v.rf3,color:COLORS.faint,dash:true}],series:[{label:'Expected Return vs Beta',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'treynorratio',ch:5,year:1965,who:'Jack Treynor',name:'Treynor Ratio',
+  desc:'Mengukur excess return PER UNIT RISIKO SISTEMATIS (beta) — berbeda dari Sharpe Ratio yang memakai total volatility (standard deviation), Treynor lebih relevan untuk portfolio yang SUDAH terdiversifikasi (di mana risiko unik/idiosyncratic sudah dihilangkan).',
+  tex:'\\text{Treynor}=\\frac{R_p-R_f}{\\beta_p}',
+  vars:[
+    {k:'portreturn',label:'Portfolio Return',min:2,max:30,step:0.5,def:14,unit:'%'},
+    {k:'rf4',label:'Risk-Free Rate',min:1,max:8,step:0.25,def:4,unit:'%'},
+    {k:'portbeta',label:'Portfolio Beta',min:0.3,max:2.5,step:0.05,def:1.1,unit:''}
+  ],
+  calc(v){
+    const treynor = (v.portreturn-v.rf4)/v.portbeta;
+    const excessReturn = v.portreturn-v.rf4;
+    const pts = sweep(0.3,2.5,60,b=>(v.portreturn-v.rf4)/b);
+    return {
+      big:fmtNum(treynor,3),bigUnit:'',bigLabel:'Treynor Ratio',
+      subs:[{l:'Excess Return',v:fmtNum(excessReturn,2)+'%'},{l:'Portfolio Beta',v:fmtNum(v.portbeta,3)}],
+      note:{type: treynor<v.rf4*0.5?'warn':'info', text: 'Treynor Ratio paling berguna untuk MEMBANDINGKAN beberapa portfolio yang SUDAH terdiversifikasi dengan baik — untuk portfolio dengan diversifikasi buruk (masih banyak risiko idiosyncratic), Sharpe Ratio adalah metrik yang lebih tepat karena memakai TOTAL risk, bukan cuma systematic risk.'},
+      chart:{xMin:0.3,xMax:2.5,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.portbeta,series:[{label:'Treynor Ratio vs Portfolio Beta',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'freefloat',ch:5,year:2000,who:'Praktik Index Construction Modern (S&P, MSCI)',name:'Free Float Market Cap',
+  desc:'Mengukur market cap HANYA dari saham yang benar-benar bisa diperdagangkan publik (mengecualikan saham yang dipegang insider, pemerintah, atau strategic holders) — metodologi standar yang dipakai index provider modern seperti S&P dan MSCI untuk weighting index.',
+  tex:'\\text{Free Float Mcap}=\\text{Shares Outstanding}\\times(1-\\text{Insider \\%})\\times \\text{Price}',
+  vars:[
+    {k:'sharesout',label:'Shares Outstanding',min:10,max:500,step:5,def:100,unit:'M'},
+    {k:'insiderpct',label:'Insider/Strategic Holding %',min:0,max:80,step:1,def:35,unit:'%'},
+    {k:'price4',label:'Harga Saham',min:5,max:300,step:1,def:50,unit:'$'}
+  ],
+  calc(v){
+    const totalMcap = v.sharesout*v.price4;
+    const freeFloatShares = v.sharesout*(1-v.insiderpct/100);
+    const freeFloatMcap = freeFloatShares*v.price4;
+    const pts = sweep(0,80,60,ip=>v.sharesout*(1-ip/100)*v.price4);
+    return {
+      big:fmtNum(freeFloatMcap,1),bigUnit:'$M',bigLabel:'Free Float Market Cap',
+      subs:[{l:'Total Market Cap',v:'$'+fmtNum(totalMcap,1)+'M'},{l:'Free Float %',v:fmtNum(100-v.insiderpct,1)+'%'}],
+      note:{type: v.insiderpct>50?'warn':'info', text: v.insiderpct>50?'Insider holding >50%: free float sangat terbatas — saham ini berisiko mengalami liquidity rendah, dan kemungkinan TIDAK akan masuk ke index mayor (yang biasanya mensyaratkan free float minimum tertentu untuk inklusi).':'Free float cukup besar untuk memenuhi syarat inklusi index mayor — likuiditas trading umumnya lebih baik dibanding saham dengan insider holding besar.'},
+      chart:{xMin:0,xMax:80,yMin:0,yMax:totalMcap*1.1,vline:v.insiderpct,hlines:[{y:totalMcap,color:COLORS.faint,dash:true}],series:[{label:'Free Float Mcap vs Insider Holding %',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'evsales',ch:5,year:1990,who:'Praktik Investment Banking (sektor growth/unprofitable)',name:'EV/Sales (EV/Revenue) Multiple',
+  desc:'Multiple valuasi yang dipakai ketika perusahaan belum profitable (EBITDA/earnings negatif), umum untuk startup, perusahaan growth-stage, atau sektor yang sedang investasi besar — kelemahannya: mengabaikan SAMA SEKALI perbedaan margin profitabilitas antar perusahaan.',
+  tex:'EV/\\text{Sales}=\\frac{\\text{Enterprise Value}}{\\text{Annual Revenue}}',
+  vars:[
+    {k:'evtarget',label:'Enterprise Value Target',min:50,max:3000,step:50,def:800,unit:'$M'},
+    {k:'salestarget',label:'Annual Revenue',min:50,max:1500,step:25,def:500,unit:'$M'},
+    {k:'growthrate2',label:'Revenue Growth Rate (YoY)',min:0,max:100,step:5,def:25,unit:'%'}
+  ],
+  calc(v){
+    const evSales = v.evtarget/v.salestarget;
+    const pts = sweep(50,1500,60,s=>v.evtarget/s);
+    return {
+      big:fmtNum(evSales,2),bigUnit:'x',bigLabel:'EV/Sales Multiple',
+      subs:[{l:'Revenue Growth Rate','v':fmtNum(v.growthrate2,1)+'%'},{l:'Implied EV',v:'$'+fmtNum(v.evtarget,0)+'M'}],
+      note:{type: evSales>10&&v.growthrate2<20?'warn':'info', text: evSales>10&&v.growthrate2<20?'Multiple sangat tinggi (>10x Sales) TAPI growth rate moderat (<20%): kombinasi ini sering tidak konsisten — multiple tinggi biasanya hanya dibenarkan untuk perusahaan dengan growth rate sangat tinggi (hyper-growth) ATAU margin yang diproyeksikan sangat superior di masa depan.':'EV/Sales multiple harus SELALU diinterpretasi relatif terhadap growth rate dan margin yang diproyeksikan — multiple "tinggi" untuk perusahaan growth 80%/tahun bisa jadi "wajar", sementara sama untuk perusahaan growth 10% adalah red flag.'},
+      chart:{xMin:50,xMax:1500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.salestarget,series:[{label:'EV/Sales vs Annual Revenue',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'sustainablegrowth',ch:5,year:1962,who:'Robert Higgins',name:'Sustainable Growth Rate (SGR)',
+  desc:'Tingkat growth MAKSIMUM yang bisa dicapai perusahaan TANPA menambah leverage finansial atau menerbitkan ekuitas baru — dihitung dari ROE dan retention rate, berguna untuk menilai apakah target growth manajemen realistis secara finansial.',
+  tex:'SGR=ROE\\times \\text{Retention Rate}',
+  vars:[
+    {k:'roe3',label:'Return on Equity (ROE)',min:2,max:35,step:0.5,def:15,unit:'%'},
+    {k:'retentionrate2',label:'Retention Rate (1-Payout)',min:0,max:100,step:5,def:60,unit:'%'}
+  ],
+  calc(v){
+    const sgr = v.roe3*(v.retentionrate2/100);
+    const pts = sweep(0,100,60,rr=>v.roe3*(rr/100));
+    return {
+      big:fmtNum(sgr,2),bigUnit:'%',bigLabel:'Sustainable Growth Rate',
+      subs:[{l:'ROE',v:fmtNum(v.roe3,2)+'%'},{l:'Retention Rate',v:fmtNum(v.retentionrate2,1)+'%'}],
+      note:{type: sgr<5?'info':sgr>25?'warn':'good', text: sgr<5?'SGR rendah (<5%): jika manajemen menargetkan growth jauh di atas ini TANPA menambah utang/ekuitas baru, target tersebut secara matematis tidak sustainable dari internal financing saja.':sgr>25?'SGR tinggi (>25%) menunjukkan kombinasi ROE tinggi dan retention rate besar — periksa apakah ROE setinggi ini bisa dipertahankan jangka panjang, atau ada risiko mean-reversion ke level industri yang lebih rendah.':'SGR berada di rentang yang umum untuk perusahaan matang dengan growth organik yang didanai internal secara penuh.'},
+      chart:{xMin:0,xMax:100,yMin:0,yMax:v.roe3*1.1,vline:v.retentionrate2,series:[{label:'SGR vs Retention Rate',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'pricesalesratio',ch:5,year:1980,who:'Kenneth Fisher (popularisasi)',name:'Price-to-Sales (P/S) Ratio',
+  desc:'Dipopulerkan Kenneth Fisher sebagai alternatif valuasi saat earnings tidak reliable (volatile/negatif) — membandingkan market cap dengan revenue, sering dipakai untuk screening saham cyclical di titik bawah siklus earnings.',
+  tex:'P/S=\\frac{\\text{Market Cap}}{\\text{Annual Revenue}}',
+  vars:[
+    {k:'mcap2',label:'Market Cap',min:50,max:3000,step:50,def:600,unit:'$M'},
+    {k:'revenue2',label:'Annual Revenue',min:50,max:1500,step:25,def:400,unit:'$M'},
+    {k:'netmargin2',label:'Net Margin (untuk konteks)',min:-10,max:30,step:0.5,def:8,unit:'%'}
+  ],
+  calc(v){
+    const ps = v.mcap2/v.revenue2;
+    const impliedPE = v.netmargin2>0 ? ps/(v.netmargin2/100) : null;
+    const pts = sweep(50,1500,60,r=>v.mcap2/r);
+    return {
+      big:fmtNum(ps,2),bigUnit:'x',bigLabel:'Price-to-Sales Ratio',
+      subs:[{l:'Net Margin',v:fmtNum(v.netmargin2,1)+'%'},{l:'Implied P/E (jika margin positif)',v: impliedPE!==null? fmtNum(impliedPE,2)+'x' : 'N/A (margin negatif)'}],
+      note:{type: v.netmargin2<0?'warn':'info', text: v.netmargin2<0?'Net margin NEGATIF: P/S menjadi metrik valuasi yang LEBIH RELEVAN dibanding P/E (yang tidak terdefinisi untuk earnings negatif) — umum dipakai untuk menilai growth company yang belum profitable.':'P/S paling informatif jika DIBANDINGKAN dengan peer di sektor yang SAMA dengan margin yang sebanding — P/S tinggi dengan margin tinggi bisa setara P/S rendah dengan margin tipis dalam hal implied P/E.'},
+      chart:{xMin:50,xMax:1500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.revenue2,series:[{label:'P/S Ratio vs Annual Revenue',color:COLORS.violet,pts}]}
+    };
+  }
+}
+]);
+
+/* =========================================================
+   QUANT CODEX — UI ENGINE
+   ========================================================= */
+let activeId=null, currentSeed=(Date.now()&0xffffff), chartInst=null, searchQ='';
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function chColorKey(ch){return ({1:'amber',2:'red',3:'green',4:'cyan',5:'violet'})[ch]||'amber';}
+function chColor(ch){return COLORS[chColorKey(ch)];}
+function chIcon(ch){return ({1:'💎',2:'⚡',3:'📊',4:'🌍',5:'🔮'})[ch]||'•';}
+
+/* ---------- ticker ---------- */
+function buildTicker(){
+  const html=FORMULAS.map(f=>`<span class="tick-item" onclick="selectFormula('${f.id}')"><b>${f.year}</b>&nbsp;${esc(f.name)}</span>`).join('');
+  $('tickerTrack').innerHTML=html+html;
+}
+
+/* ---------- sidebar ---------- */
+function buildSidebar(){
+  const q=searchQ.trim().toLowerCase();
+  let html='';
+  let totalShown=0;
+  CHAPTER_META.forEach(ch=>{
+    const fms=FORMULAS.filter(f=>f.ch===ch.id && (!q || (f.name+' '+f.who+' '+f.year+' '+f.id).toLowerCase().includes(q)));
+    if(!fms.length) return;
+    totalShown+=fms.length;
+    const collapsed = q ? '' : '';
+    html+=`<div class="chapter-group ${collapsed}" data-ch="${ch.id}">
+      <div class="chapter-head" onclick="toggleChapterGroup(this)">
+        <div>
+          <div class="ch-title" style="color:${chColor(ch.id)}">${chIcon(ch.id)}&nbsp; Bab ${ch.id} · ${esc(ch.title)}</div>
+          <div class="ch-sub">${esc(ch.sub)}</div>
+        </div>
+        <span class="ch-count">${fms.length}</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="chapter-body">
+        ${fms.map(f=>`<div class="formula-row${f.id===activeId?' active':''}" data-id="${f.id}" onclick="selectFormula('${f.id}')">
+          <span class="yr">${f.year}</span><span class="nm">${esc(f.name)}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  $('sidebar').innerHTML = html || `<div style="padding:30px 16px;text-align:center;color:var(--faint);font-size:12.5px;">Tidak ada rumus yang cocok dengan pencarian.</div>`;
+  $('statCount').textContent = q ? totalShown : FORMULAS.length;
+}
+function toggleChapterGroup(headEl){
+  headEl.parentElement.classList.toggle('collapsed');
+}
+$('searchInput').addEventListener('input',e=>{
+  searchQ=e.target.value;
+  buildSidebar();
+  if(searchQ.trim()){
+    document.querySelectorAll('.chapter-group').forEach(g=>g.classList.remove('collapsed'));
+  }
+});
+
+/* ---------- welcome / intro screen ---------- */
+function renderWelcome(){
+  $('main').innerHTML=`
+    <div class="intro-card">
+      <b>📊 Selamat datang di Wall Street Codex.</b> Perpustakaan interaktif berisi <b>${FORMULAS.length} rumus</b> accounting, valuation, dan corporate finance dari tahun 1900–2000, terbagi dalam 5 bab.
+      Pilih rumus dari daftar di samping (atau dari ticker berjalan di atas), lalu geser parameter untuk melihat hasil kalkulasi dan grafik bergerak secara real-time.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
+      ${CHAPTER_META.map(ch=>{
+        const cnt=FORMULAS.filter(f=>f.ch===ch.id).length;
+        const first=FORMULAS.find(f=>f.ch===ch.id);
+        return `<div class="card" style="cursor:pointer;border-color:${chColor(ch.id)}33" onclick="selectFormula('${first.id}')">
+          <div style="font-size:1.7em;margin-bottom:8px;">${chIcon(ch.id)}</div>
+          <div style="font-size:12.5px;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:4px;">${esc(ch.title)}</div>
+          <div style="font-size:10.5px;color:var(--faint);line-height:1.4;margin-bottom:10px;">${esc(ch.sub)}</div>
+          <div style="font-family:var(--mono);font-size:10.5px;color:${chColor(ch.id)};">${cnt} rumus →</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* ---------- formula detail view ---------- */
+function buildControlsHTML(f){
+  return (f.vars||[]).map(v=>{
+    if(v.type==='toggle'){
+      return `<div class="ctrl" data-vk="${v.k}" data-vtype="toggle">
+        <div class="ctrl-label"><span>${esc(v.label)}</span></div>
+        <div class="toggle-wrap">
+          <button type="button" class="${v.def?'on':''}" data-val="true" onclick="onToggleClick(this)">${esc(v.onLabel||'On')}</button>
+          <button type="button" class="${!v.def?'on':''}" data-val="false" onclick="onToggleClick(this)">${esc(v.offLabel||'Off')}</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="ctrl" data-vk="${v.k}" data-vtype="range">
+      <div class="ctrl-label"><span>${esc(v.label)}</span><span class="val" id="val_${v.k}">${fmtNum(v.def, decimalsFor(v))}${v.unit||''}</span></div>
+      <input type="range" id="rng_${v.k}" min="${v.min}" max="${v.max}" step="${v.step}" value="${v.def}" oninput="onSliderInput('${v.k}')">
+    </div>`;
+  }).join('');
+}
+function decimalsFor(v){
+  const s=String(v.step);
+  const dot=s.indexOf('.');
+  return dot===-1?0:Math.min(4,s.length-dot-1);
+}
+function onToggleClick(btn){
+  const wrap=btn.parentElement;
+  [...wrap.children].forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  updateFormula();
+}
+function onSliderInput(key){
+  const f=getActiveFormula(); if(!f) return;
+  const vDef=(f.vars||[]).find(x=>x.k===key);
+  const el=$('rng_'+key), out=$('val_'+key);
+  if(out) out.textContent=fmtNum(+el.value, decimalsFor(vDef))+(vDef.unit||'');
+  updateFormula();
+}
+function getActiveFormula(){ return FORMULAS.find(x=>x.id===activeId); }
+function gatherParams(f){
+  const p={};
+  (f.vars||[]).forEach(v=>{
+    if(v.type==='toggle'){
+      const wrap=document.querySelector(`.ctrl[data-vk="${v.k}"] .toggle-wrap`);
+      const onBtn=wrap?wrap.querySelector('button.on'):null;
+      p[v.k]= onBtn ? onBtn.dataset.val==='true' : v.def;
+    } else {
+      const el=$('rng_'+v.k);
+      p[v.k]= el ? +el.value : v.def;
+    }
+  });
+  return p;
+}
+
+function selectFormula(id){
+  const f=FORMULAS.find(x=>x.id===id);
+  if(!f) return;
+  activeId=id;
+  currentSeed=(Date.now()&0xffffff);
+  buildSidebar();
+  const idx=FORMULAS.indexOf(f);
+  const prev=FORMULAS[idx-1], next=FORMULAS[idx+1];
+  const ck=chColorKey(f.ch);
+
+  $('main').innerHTML=`
+    <div class="f-meta">
+      <span class="pill ch" style="color:${chColor(f.ch)};border-color:${chColor(f.ch)}44;background:${chColor(f.ch)}1a;">Bab ${f.ch} · ${esc(CHAPTER_META[f.ch-1].title)}</span>
+      <span class="pill">${f.year}</span>
+    </div>
+    <h1 class="f-title">${esc(f.name)}</h1>
+    <div class="f-who">${esc(f.who)}</div>
+    <p class="f-desc">${esc(f.desc)}</p>
+    <div class="f-formula-box"><span id="texHolder"></span></div>
+    <div class="f-grid">
+      <div class="card">
+        <h4>🎛️ Parameter</h4>
+        <div id="ctrlHolder">${buildControlsHTML(f)}</div>
+      </div>
+      <div class="card">
+        <h4>📊 Hasil Kalkulasi</h4>
+        <div id="readoutHolder"></div>
+      </div>
+    </div>
+    <div class="f-chartwrap">
+      <div class="chart-head">
+        <h4>Grafik Interaktif</h4>
+        ${f.stochastic?`<button class="randbtn" onclick="reseed()">🎲 Acak Ulang</button>`:''}
+      </div>
+      <canvas id="chartCanvas"></canvas>
+      <div class="legend" id="legendHolder"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:12px;margin:24px 0 40px;">
+      ${prev?`<div class="card" style="cursor:pointer;flex:1;max-width:340px;" onclick="selectFormula('${prev.id}')"><div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;">← Sebelumnya</div><div style="font-size:12.5px;color:var(--dim);margin-top:4px;">${esc(prev.name)}</div></div>`:'<div></div>'}
+      ${next?`<div class="card" style="cursor:pointer;flex:1;max-width:340px;text-align:right;" onclick="selectFormula('${next.id}')"><div style="font-family:var(--mono);font-size:10px;color:var(--faint);text-transform:uppercase;">Berikutnya →</div><div style="font-size:12.5px;color:var(--dim);margin-top:4px;">${esc(next.name)}</div></div>`:'<div></div>'}
+    </div>`;
+
+  try{ katex.render(f.tex, $('texHolder'), {throwOnError:false, displayMode:true}); }catch(e){}
+
+  if(chartInst){ chartInst.destroy(); chartInst=null; }
+  chartInst = new QChart($('chartCanvas'));
+
+  updateFormula();
+
+  if(window.innerWidth<=880) closeSidebar();
+  $('main').scrollTop=0;
+}
+
+function reseed(){ currentSeed=(Date.now()&0xffffff)^Math.floor(Math.random()*1e6); updateFormula(); }
+
+function updateFormula(){
+  const f=getActiveFormula(); if(!f) return;
+  const params=gatherParams(f);
+  let result;
+  try{
+    const rng=mulberry32(currentSeed);
+    result=f.calc(params, rng);
+  }catch(e){
+    console.error('calc error', f.id, e);
+    result={big:'ERR',bigUnit:'',bigLabel:'Kesalahan kalkulasi',subs:[],note:{type:'danger',text:'Terjadi kesalahan saat menghitung rumus ini.'},chart:null};
+  }
+
+  const ro=$('readoutHolder');
+  const subsHtml=(result.subs||[]).map(s=>`<div class="sub-stat"><span class="l">${esc(s.l)}</span><span class="v">${esc(String(s.v))}</span></div>`).join('');
+  const noteType=result.note?result.note.type:'';
+  const noteHtml=result.note?`<div class="note-badge ${noteType}">${esc(result.note.text)}</div>`:'';
+  ro.innerHTML=`<div class="readout-big">
+      <div class="lbl">${esc(result.bigLabel||'Hasil')}</div>
+      <div class="num">${esc(String(result.big))}<small>${esc(result.bigUnit||'')}</small></div>
+    </div>
+    <div class="sub-stats">${subsHtml}</div>
+    ${noteHtml}`;
+
+  const legend=$('legendHolder');
+  if(result.chart && chartInst){
+    chartInst.set(result.chart);
+    if(result.chart.mode==='bars'){
+      legend.innerHTML=(result.chart.bars||[]).map(b=>`<span class="legend-item"><span class="legend-sw" style="background:${b.color}"></span>${esc(b.label)}</span>`).join('');
+    } else {
+      legend.innerHTML=(result.chart.series||[]).map(s=>`<span class="legend-item"><span class="legend-sw${s.dash?' dash':''}" style="background:${s.dash?'none':s.color};border-color:${s.color}"></span>${esc(s.label)}</span>`).join('');
+    }
+  } else if(legend){
+    legend.innerHTML='';
+  }
+}
+
+/* ---------- mobile sidebar ---------- */
+$('hamburger').addEventListener('click',()=>{
+  $('sidebar').classList.toggle('open');
+  $('body').classList.toggle('sb-open');
+});
+function closeSidebar(){ $('sidebar').classList.remove('open'); $('body').classList.remove('sb-open'); }
+$('body').addEventListener('click',e=>{
+  if($('body').classList.contains('sb-open') && e.target.id==='body'){ closeSidebar(); }
+});
+
+/* ---------- boot ---------- */
+buildTicker();
+buildSidebar();
+renderWelcome();
+</script>
+</body>
+</html>
