@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Wall Street Codex · 130+ Rumus Accounting & Corporate Finance Interaktif</title>
+<title>Wall Street Codex · 78 Rumus Accounting & Corporate Finance Interaktif</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 :root{
@@ -161,7 +161,7 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
     <button id="hamburger" aria-label="menu">☰</button>
     <div class="brand">WALL<span class="dot">·</span><span class="sub">ST CODEX</span></div>
     <div class="searchwrap"><input id="searchInput" placeholder="cari rumus, tahun, atau penulis…" /></div>
-    <div class="stat"><b id="statCount">130</b> rumus · <b>12</b> bab · 1900–2024</div>
+    <div class="stat"><b id="statCount">106</b> rumus · <b>5</b> bab · 1900–2024</div>
   </header>
   <div id="ticker"><div id="tickerTrack"></div></div>
   <div id="body">
@@ -293,7 +293,8 @@ function fmtCompact(v){
 
 /* ---------- colors ---------- */
 const COLORS={bg:'#05080f',panel:'#0a0f1c',border:'#192234',borderSoft:'#121a29',text:'#dde2ec',dim:'#7a839a',faint:'#4a5268',
-  amber:'#ffb020',cyan:'#5ec8d8',green:'#34d399',red:'#ef5d5d',violet:'#a78bfa'};
+  amber:'#ffb020',cyan:'#5ec8d8',green:'#34d399',red:'#ef5d5d',violet:'#a78bfa',
+  teal:'#2dd4bf',orange:'#fb923c',sky:'#38bdf8',rose:'#fb7185'};
 
 /* ---------- canvas drawing primitives ---------- */
 function roundRectPath(ctx,x,y,w,h,r){
@@ -509,13 +510,10 @@ const CHAPTER_META=[
   {id:3,title:'Credit & Fixed Income',sub:'Bond Pricing, Duration & Credit Risk'},
   {id:4,title:'Corporate Finance & Capital Structure',sub:'WACC, NPV/IRR, M&A & Capital Budgeting'},
   {id:5,title:'Equity Research & Markets',sub:'EPS, CAPM, Beta & Trading Multiples'},
-  {id:6,title:'M&A Lanjutan & LBO',sub:'IRR PE, Sinergi, Control Premium, Accretion/Dilution'},
-  {id:7,title:'Bank & Financial Institution',sub:'NIM, CAR, Tier 1, Loan Loss Provision, ROA/ROE Bank'},
-  {id:8,title:'Real Estate & REIT',sub:'FFO, AFFO, Cap Rate & NOI Valuation'},
-  {id:9,title:'Forex & International Finance',sub:'PPP, Interest Rate Parity & Forward Rate'},
-  {id:10,title:'Lease & Pension Accounting',sub:'IFRS 16/ASC 842 Capitalization, PBO & Funded Status'},
-  {id:11,title:'Advanced Credit — Merton Model',sub:'Structural Credit Risk, Distance-to-Default & CDS'},
-  {id:12,title:'Index & Market Microstructure',sub:'Weighting Methodology, Bid-Ask Spread & Market Impact'}
+  {id:6,title:'Bank & Financial Institution Analysis',sub:'NIM, CAR, LCR & Bank-Specific Metrics'},
+  {id:7,title:'M&A & LBO Advanced',sub:'LBO Returns, Synergy, Control Premium & Bankruptcy'},
+  {id:8,title:'Lease & Pension Accounting',sub:'ASC 842/IFRS 16, Pension Funded Status'},
+  {id:9,title:'Index Methodology & Advanced Liquidity',sub:'Free-Float Weighting, Cash & Defensive Ratios'}
 ];
 
 /* ---------- formula registry ---------- */
@@ -1742,853 +1740,582 @@ addF([
 }
 ]);
 
-/* ===================== BAB 6: M&A LANJUTAN & LBO (8) ===================== */
+/* ===================== BAB 6: BANK & FINANCIAL INSTITUTION ANALYSIS (9) ===================== */
 addF([
 {
-  id:'lboirr',ch:6,year:1976,who:'KKR & Praktik Private Equity',name:'LBO Model — IRR & Money-on-Money',
-  desc:'Leveraged Buyout (LBO) adalah akuisisi yang dibiayai mayoritas dengan utang. IRR dan Multiple of Money (MoM) adalah dua metrik utama PE untuk mengukur return investasi selama holding period.',
-  tex:'IRR:\\; 0=-\\text{Equity}_{entry}+\\sum_{t=1}^{n}\\frac{CF_t}{(1+IRR)^t}+\\frac{\\text{Equity}_{exit}}{(1+IRR)^n}',
+  id:'nim',ch:6,year:1980,who:'Praktik Analisis Perbankan',name:'Net Interest Margin (NIM)',
+  desc:'Metrik profitabilitas INTI untuk bank — mengukur spread antara pendapatan bunga dari aset produktif (kredit, surat berharga) dan biaya bunga dana, relatif terhadap total aset produktif. Ini adalah "gross margin" versi perbankan.',
+  tex:'NIM=\\frac{\\text{Interest Income}-\\text{Interest Expense}}{\\text{Avg. Earning Assets}}',
   vars:[
-    {k:'entryev',label:'Entry Enterprise Value',min:200,max:5000,step:50,def:1000,unit:'$M'},
-    {k:'debtpct',label:'Debt % dari Entry EV',min:30,max:80,step:1,def:65,unit:'%'},
-    {k:'ebitdaentry',label:'Entry EBITDA',min:20,max:500,step:10,def:100,unit:'$M'},
-    {k:'exitmult',label:'Exit EV/EBITDA Multiple',min:4,max:14,step:0.25,def:8,unit:'x'},
-    {k:'ebitdagrowth',label:'EBITDA CAGR selama holding',min:0,max:25,step:0.5,def:8,unit:'%'},
-    {k:'holdperiod',label:'Holding Period',min:3,max:7,step:1,def:5,unit:' thn'}
-  ],
-  calc(v){
-    const debtEntry = v.entryev*v.debtpct/100;
-    const equityEntry = v.entryev - debtEntry;
-    const ebitdaExit = v.ebitdaentry*Math.pow(1+v.ebitdagrowth/100, v.holdperiod);
-    const evExit = ebitdaExit*v.exitmult;
-    const debtRemaining = debtEntry*0.5; // assume ~50% debt paydown
-    const equityExit = Math.max(evExit - debtRemaining, 0);
-    const mom = equityExit/equityEntry;
-    // solve IRR by bisection
-    function pv(r){ return -equityEntry + equityExit/Math.pow(1+r, v.holdperiod); }
-    let lo=0.0001, hi=2;
-    for(let i=0;i<80;i++){ const mid=(lo+hi)/2; if(pv(mid)>0) lo=mid; else hi=mid; }
-    const irr = (lo+hi)/2*100;
-    const pts = sweep(4,14,50,em=>{ const ev2=ebitdaExit*em; const eq2=Math.max(ev2-debtRemaining,0); let l=0.0001,h=2; for(let i=0;i<60;i++){const m=(l+h)/2;(-equityEntry+eq2/Math.pow(1+m,v.holdperiod))>0?lo=m:hi=m;} return (l+h)/2*100; });
-    return {
-      big:fmtNum(irr,1),bigUnit:'%',bigLabel:'IRR (Annualized)',
-      subs:[{l:'Equity Entry',v:'$'+fmtNum(equityEntry,1)+'M'},{l:'Equity Exit (est.)',v:'$'+fmtNum(equityExit,1)+'M'},{l:'Money-on-Money (MoM)',v:fmtNum(mom,2)+'x'},{l:'EV Exit',v:'$'+fmtNum(evExit,1)+'M'}],
-      note:{type: irr<20?'warn':irr>30?'good':'info', text: irr<20?'IRR <20%: di bawah hurdle rate tipikal PE fund (20-25%) — deal mungkin tidak menarik kecuali ada strategic value lain.':irr>30?'IRR >30%: return sangat atraktif untuk PE — biasanya membutuhkan kombinasi multiple expansion, debt paydown agresif, dan pertumbuhan EBITDA kuat.':'IRR di zona acceptable untuk banyak PE fund mid-market.'},
-      chart:{xMin:4,xMax:14,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.exitmult,hlines:[{y:20,color:COLORS.faint,dash:true}],series:[{label:'IRR vs Exit Multiple',color:COLORS.amber,pts}]}
-    };
-  }
-},
-{
-  id:'synergyval',ch:6,year:1990,who:'Damodaran (Synergy Valuation)',name:'Synergy Valuation dalam M&A',
-  desc:'Sinergi adalah sumber value utama dalam M&A — "1+1>2". Sinergi operasional (cost savings, revenue lift) dan finansial (tax benefit, lower cost of capital) masing-masing berkontribusi pada maximum premium yang bisa dibayar acquirer.',
-  tex:'V_{synergy}=\\frac{\\Delta EBITDA_{synergy}\\times(1-T_c)}{WACC}',
-  vars:[
-    {k:'costsynergy',label:'Annual Cost Synergies',min:0,max:100,step:2,def:30,unit:'$M'},
-    {k:'revsynergy',label:'Annual Revenue Synergies (after margin)',min:0,max:80,step:2,def:15,unit:'$M'},
-    {k:'realizeyr',label:'Tahun Realisasi Penuh',min:1,max:4,step:1,def:2,unit:' thn'},
-    {k:'waccma',label:'WACC',min:5,max:15,step:0.25,def:9,unit:'%'},
-    {k:'taxma',label:'Tax Rate',min:10,max:35,step:1,def:25,unit:'%'}
-  ],
-  calc(v){
-    const annualSynergy = (v.costsynergy+v.revsynergy);
-    const afterTaxSynergy = annualSynergy*(1-v.taxma/100);
-    const pvSynergy = afterTaxSynergy/( v.waccma/100 ) * Math.pow(1/(1+v.waccma/100), v.realizeyr-1);
-    const pvCost = afterTaxSynergy*0.3*v.realizeyr; // integration costs estimate
-    const netSynergy = pvSynergy - pvCost;
-    const pts = sweep(5,15,50,w=>{ const at=annualSynergy*(1-v.taxma/100); return at/(w/100)*Math.pow(1/(1+w/100),v.realizeyr-1); });
-    return {
-      big:fmtNum(pvSynergy,1),bigUnit:'$M',bigLabel:'PV of Synergies (Gross)',
-      subs:[{l:'After-Tax Annual Synergy',v:'$'+fmtNum(afterTaxSynergy,1)+'M'},{l:'Estimated Integration Cost',v:'$'+fmtNum(pvCost,1)+'M'},{l:'Net Synergy Value',v:'$'+fmtNum(netSynergy,1)+'M'},{l:'Cost Synergies',v:'$'+fmtNum(v.costsynergy,1)+'M/yr'}],
-      note:{type: pvCost/pvSynergy>0.3?'warn':'good', text: pvCost/pvSynergy>0.3?'Estimated integration cost cukup besar relatif terhadap gross synergy — pastikan integrasi dieksekusi dengan baik untuk merealisasi nilai sinergi penuh.':'Synergy value signifikan. Ingat bahwa rata-rata studi akademis menunjukkan ACQUIRER sering membayar terlalu banyak untuk sinergi yang tidak fully realized.'},
-      chart:{xMin:5,xMax:15,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.waccma,series:[{label:'PV Sinergi vs WACC',color:COLORS.green,pts}]}
-    };
-  }
-},
-{
-  id:'controlpremium',ch:6,year:1985,who:'Praktik M&A Investment Banking',name:'Control Premium & Implied Offer Price',
-  desc:'Control premium adalah harga tambahan yang dibayar acquirer di atas harga pasar saham target untuk mendapatkan KONTROL. Secara historis rata-rata 20-40% premium. Offer price = harga pasar × (1 + premium%).',
-  tex:'P_{offer}=P_{market}\\times(1+\\text{Control Premium}\\%)',
-  vars:[
-    {k:'mktprice',label:'Harga Pasar Saham Target',min:5,max:200,step:1,def:50,unit:'$'},
-    {k:'sharesout',label:'Shares Outstanding',min:10,max:500,step:5,def:100,unit:'M'},
-    {k:'ctrprem',label:'Control Premium',min:5,max:60,step:1,def:30,unit:'%'},
-    {k:'netdebt',label:'Net Debt Target',min:0,max:2000,step:50,def:200,unit:'$M'}
-  ],
-  calc(v){
-    const offerPrice = v.mktprice*(1+v.ctrprem/100);
-    const equityValPre = v.mktprice*v.sharesout;
-    const offerEquity = offerPrice*v.sharesout;
-    const impliedEV = offerEquity+v.netdebt;
-    const premiumPaid = offerEquity-equityValPre;
-    const pts = sweep(5,60,50,cp=>v.mktprice*(1+cp/100)*v.sharesout);
-    return {
-      big:fmtNum(offerPrice,2),bigUnit:'$/share',bigLabel:'Implied Offer Price',
-      subs:[{l:'Equity Value (pre-deal)',v:'$'+fmtNum(equityValPre,0)+'M'},{l:'Offer Equity Value',v:'$'+fmtNum(offerEquity,0)+'M'},{l:'Implied Enterprise Value',v:'$'+fmtNum(impliedEV,0)+'M'},{l:'Total Premium Paid',v:'$'+fmtNum(premiumPaid,0)+'M'}],
-      note:{type: v.ctrprem>45?'warn':v.ctrprem<15?'info':'good', text: v.ctrprem>45?'Premium sangat tinggi (>45%): acquirer membayar mahal — secara historis, deal dengan premium >40% seringkali lebih menguntungkan TARGET dibanding acquirer (winner\'s curse).':v.ctrprem<15?'Premium relatif rendah (<15%): mungkin deal tidak-hostile atau target dalam kondisi lemah. Rata-rata historical control premium global sekitar 25-35%.':'Premium dalam rentang historis normal (20-40%) — masih diperlukan justifikasi sinergi yang solid untuk membenarkan nilai ini.'},
-      chart:{xMin:5,xMax:60,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.ctrprem,series:[{label:'Total Offer Equity vs Premium %',color:COLORS.cyan,pts}]}
-    };
-  }
-}
-]);
-
-/* ===================== BAB 7: BANK & FINANCIAL INSTITUTION ANALYSIS (7) ===================== */
-addF([
-{
-  id:'nim',ch:7,year:1960,who:'Analisis Perbankan Tradisional',name:'Net Interest Margin (NIM)',
-  desc:'NIM adalah metrik profitabilitas INTI bank — mengukur spread antara bunga yang diterima dari aset produktif (kredit, investasi) versus bunga yang dibayar ke sumber dana (deposito, pinjaman). Berbeda total dari margin korporat biasa.',
-  tex:'NIM=\\frac{\\text{Interest Income}-\\text{Interest Expense}}{\\text{Average Earning Assets}}',
-  vars:[
-    {k:'intincome',label:'Interest Income',min:100,max:3000,step:25,def:800,unit:'$M'},
-    {k:'intexpense',label:'Interest Expense',min:20,max:1500,step:10,def:300,unit:'$M'},
-    {k:'earningassets',label:'Average Earning Assets',min:1000,max:50000,step:500,def:15000,unit:'$M'}
+    {k:'intincome',label:'Interest Income',min:20,max:300,step:5,def:80,unit:'$M'},
+    {k:'intexpense',label:'Interest Expense',min:5,max:200,step:5,def:30,unit:'$M'},
+    {k:'earningassets',label:'Average Earning Assets',min:300,max:3000,step:50,def:1000,unit:'$M'}
   ],
   calc(v){
     const nim = (v.intincome-v.intexpense)/v.earningassets*100;
     const netIntIncome = v.intincome-v.intexpense;
-    const costOfFunds = v.intexpense/v.earningassets*100;
-    const yieldOnAssets = v.intincome/v.earningassets*100;
-    const pts = sweep(1000,50000,50,ea=>(v.intincome-v.intexpense)/ea*100);
+    const pts = sweep(300,3000,60,ea=>(v.intincome-v.intexpense)/ea*100);
     return {
       big:fmtNum(nim,2),bigUnit:'%',bigLabel:'Net Interest Margin',
-      subs:[{l:'Net Interest Income',v:'$'+fmtNum(netIntIncome,0)+'M'},{l:'Yield on Assets',v:fmtNum(yieldOnAssets,2)+'%'},{l:'Cost of Funds',v:fmtNum(costOfFunds,2)+'%'},{l:'Interest Rate Spread',v:fmtNum(yieldOnAssets-costOfFunds,2)+'pp'}],
-      note:{type: nim<1.5?'danger':nim<2.5?'warn':'good', text: nim<1.5?'NIM sangat rendah (<1.5%): bank menghadapi tekanan spread yang serius — umum di lingkungan suku bunga rendah berkepanjangan atau bank dengan aset berisiko rendah (government bonds heavy).':nim<2.5?'NIM moderat (1.5-2.5%): tipikal untuk banyak bank commercial di pasar berkembang atau bank dengan funding mix yang efisien.':'NIM sehat (>2.5%): bank mampu mempertahankan spread yang baik — biasanya bank dengan retail deposit franchise yang kuat dan mix kredit lebih berisiko.'},
-      chart:{xMin:1000,xMax:50000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.2,vline:v.earningassets,series:[{label:'NIM vs Earning Assets',color:COLORS.amber,pts}]}
+      subs:[{l:'Net Interest Income',v:'$'+fmtNum(netIntIncome,1)+'M'},{l:'Earning Assets',v:'$'+fmtNum(v.earningassets,0)+'M'}],
+      note:{type: nim<2?'warn':nim>5?'good':'info', text: nim<2?'NIM rendah (<2%): bank ini beroperasi dengan spread tipis — bisa jadi karena kompetisi ketat, funding cost mahal, atau strategi volume-driven dengan margin rendah per unit.':nim>5?'NIM tinggi (>5%): spread profitabilitas sangat sehat — umum pada bank dengan funding cost rendah (banyak dana murah/giro) atau portfolio kredit dengan yield tinggi (consumer/SME lending).':'NIM berada di rentang yang tipikal untuk bank komersial kebanyakan, mencerminkan spread bunga yang sehat secara industri.'},
+      chart:{xMin:300,xMax:3000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.earningassets,series:[{label:'NIM vs Earning Assets',color:COLORS.amber,pts}]}
     };
   }
 },
 {
-  id:'caratio',ch:7,year:1988,who:'Basel Committee on Banking Supervision',name:'Capital Adequacy Ratio (CAR) & Tier 1',
-  desc:'CAR adalah rasio kecukupan modal bank terhadap aset tertimbang menurut risiko (Risk-Weighted Assets). Minimum CAR Basel III adalah 10.5% (8% CAR + 2.5% conservation buffer). Tier 1 Capital adalah komponen modal paling berkualitas tinggi.',
-  tex:'CAR=\\frac{Tier\\,1 + Tier\\,2}{RWA},\\quad Tier1\\,Ratio=\\frac{Tier\\,1\\,Capital}{RWA}',
+  id:'car_basel',ch:6,year:1988,who:'Basel Committee on Banking Supervision',name:'Capital Adequacy Ratio (CAR / Basel III)',
+  desc:'Mengukur seberapa besar buffer modal bank relatif terhadap aset tertimbang risiko (RWA) — regulator MEWAJIBKAN minimum CAR tertentu (umumnya 8% di bawah Basel III) agar bank punya cushion menyerap kerugian sebelum berdampak ke depositor.',
+  tex:'CAR=\\frac{\\text{Tier 1 Capital}+\\text{Tier 2 Capital}}{\\text{Risk-Weighted Assets}}',
   vars:[
-    {k:'tier1cap',label:'Tier 1 Capital',min:100,max:5000,step:50,def:1500,unit:'$M'},
-    {k:'tier2cap',label:'Tier 2 Capital',min:0,max:2000,step:25,def:300,unit:'$M'},
-    {k:'rwa',label:'Risk-Weighted Assets (RWA)',min:1000,max:30000,step:500,def:12000,unit:'$M'}
+    {k:'tier1',label:'Tier 1 Capital',min:20,max:300,step:5,def:80,unit:'$M'},
+    {k:'tier2',label:'Tier 2 Capital',min:0,max:150,step:5,def:20,unit:'$M'},
+    {k:'rwa',label:'Risk-Weighted Assets (RWA)',min:200,max:2000,step:25,def:600,unit:'$M'}
   ],
   calc(v){
-    const totalCapital = v.tier1cap+v.tier2cap;
-    const car = totalCapital/v.rwa*100;
-    const tier1ratio = v.tier1cap/v.rwa*100;
-    const cet1 = v.tier1cap*0.85/v.rwa*100; // est. CET1 as ~85% of T1
-    const pts = sweep(1000,30000,50,rwa=>totalCapital/rwa*100);
+    const car = (v.tier1+v.tier2)/v.rwa*100;
+    const tier1ratio = v.tier1/v.rwa*100;
+    const pts = sweep(200,2000,60,rwa=>(v.tier1+v.tier2)/rwa*100);
     return {
       big:fmtNum(car,2),bigUnit:'%',bigLabel:'Capital Adequacy Ratio',
-      subs:[{l:'Tier 1 Ratio',v:fmtNum(tier1ratio,2)+'%'},{l:'Est. CET1 Ratio',v:fmtNum(cet1,2)+'%'},{l:'Total Capital',v:'$'+fmtNum(totalCapital,0)+'M'},{l:'Risk-Weighted Assets',v:'$'+fmtNum(v.rwa,0)+'M'}],
-      note:{type: car<10.5?'danger':car<13?'warn':'good', text: car<10.5?'CAR di BAWAH minimum Basel III (10.5% with conservation buffer): bank berisiko regulatory action — bisa dipaksa raise capital atau batasi dividend/buyback.':car<13?'CAR memenuhi minimum regulasi tapi buffer tipis — bank bisa menghadapi pembatasan distribusi modal jika bisnis tumbuh agresif.':'CAR solid di atas minimum — bank punya buffer kapital yang sehat untuk mengabsorbsi kerugian dan mendukung pertumbuhan bisnis.'},
-      chart:{xMin:1000,xMax:30000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.2,vline:v.rwa,hlines:[{y:10.5,color:COLORS.red,dash:true},{y:13,color:COLORS.green,dash:true}],series:[{label:'CAR vs Risk-Weighted Assets',color:COLORS.violet,pts}]}
+      subs:[{l:'Tier 1 Ratio',v:fmtNum(tier1ratio,2)+'%'},{l:'Basel III Minimum',v:'8.00%'}],
+      note:{type: car<8?'danger':car<10.5?'warn':'good', text: car<8?'CAR DI BAWAH minimum regulasi Basel III (8%): bank ini berisiko terkena regulatory action (pembatasan dividen, capital raise wajib, atau lebih ekstrem) — kondisi sangat serius.':car<10.5?'CAR di atas minimum absolut tapi di bawah "capital conservation buffer" yang disarankan (10.5% termasuk buffer 2.5%) — ruang gerak terbatas untuk menyerap shock besar.':'CAR sehat di atas seluruh requirement Basel III termasuk buffer — bank punya cushion modal yang solid untuk menyerap potential losses.'},
+      chart:{xMin:200,xMax:2000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.rwa,hlines:[{y:8,color:COLORS.red,dash:true},{y:10.5,color:COLORS.amber,dash:true}],series:[{label:'CAR vs Risk-Weighted Assets',color:COLORS.cyan,pts}]}
     };
   }
 },
 {
-  id:'loanloss',ch:7,year:1970,who:'Praktik Perbankan & IFRS 9',name:'Loan Loss Provision & Coverage Ratio',
-  desc:'Loan Loss Provision (LLP) adalah biaya yang dicadangkan bank untuk mengantisipasi kredit macet (NPL). Coverage Ratio mengukur seberapa besar Allowance for Loan Losses (ALL) menutupi total NPL — sangat kritikal di analisis bank.',
-  tex:'\\text{Coverage Ratio}=\\frac{\\text{Loan Loss Reserve (ALL)}}{\\text{NPL}},\\quad \\text{Credit Cost}=\\frac{LLP}{\\text{Total Loans}}',
+  id:'loantodeposit',ch:6,year:1950,who:'Praktik Manajemen Likuiditas Perbankan',name:'Loan-to-Deposit Ratio (LDR)',
+  desc:'Mengukur seberapa AGRESIF bank menyalurkan dana dari deposit menjadi kredit — LDR terlalu tinggi mengindikasikan risiko likuiditas (jika depositor menarik dana massal), terlalu rendah mengindikasikan dana "menganggur" tidak produktif.',
+  tex:'LDR=\\frac{\\text{Total Loans}}{\\text{Total Deposits}}',
   vars:[
-    {k:'totloans',label:'Total Gross Loans',min:1000,max:50000,step:500,def:15000,unit:'$M'},
-    {k:'npl',label:'Non-Performing Loans (NPL)',min:10,max:3000,step:25,def:450,unit:'$M'},
-    {k:'loanreserve',label:'Allowance for Loan Losses (ALL)',min:10,max:4000,step:25,def:600,unit:'$M'},
-    {k:'llp',label:'Loan Loss Provision (annual)',min:0,max:1000,step:10,def:150,unit:'$M'}
+    {k:'totalloans',label:'Total Loans',min:100,max:2000,step:25,def:700,unit:'$M'},
+    {k:'totaldeposits',label:'Total Deposits',min:200,max:2500,step:25,def:900,unit:'$M'}
   ],
   calc(v){
-    const nplRatio = v.npl/v.totloans*100;
-    const coverageRatio = v.loanreserve/v.npl*100;
-    const creditCost = v.llp/v.totloans*100;
-    const pts = sweep(10,3000,50,npl=>v.loanreserve/npl*100);
+    const ldr = v.totalloans/v.totaldeposits*100;
+    const pts = sweep(200,2500,60,d=>v.totalloans/d*100);
     return {
-      big:fmtNum(coverageRatio,1),bigUnit:'%',bigLabel:'NPL Coverage Ratio',
-      subs:[{l:'NPL Ratio',v:fmtNum(nplRatio,2)+'%'},{l:'Credit Cost (LLP/Loans)',v:fmtNum(creditCost,2)+'%'},{l:'Loan Loss Reserve',v:'$'+fmtNum(v.loanreserve,0)+'M'},{l:'Annual Provision',v:'$'+fmtNum(v.llp,0)+'M'}],
-      note:{type: coverageRatio<80?'danger':coverageRatio<120?'warn':'good', text: coverageRatio<80?'Coverage ratio sangat rendah (<80%): cadangan tidak cukup menutupi NPL — bank rentan terhadap kerugian besar jika NPL memburuk. Regulator Indonesia OJK mewajibkan pencadangan memadai.':coverageRatio<120?'Coverage ratio moderat: memadai secara regulasi, tapi margin keamanan terbatas untuk skenario kredit macet yang memburuk.':'Coverage ratio kuat (>120%): bank punya cadangan lebih dari cukup untuk mengabsorbsi NPL — konservatif dan prudent.'},
-      chart:{xMin:10,xMax:3000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.npl,hlines:[{y:100,color:COLORS.faint,dash:true}],series:[{label:'Coverage Ratio vs NPL',color:COLORS.red,pts}]}
+      big:fmtNum(ldr,2),bigUnit:'%',bigLabel:'Loan-to-Deposit Ratio',
+      subs:[{l:'Total Loans',v:'$'+fmtNum(v.totalloans,0)+'M'},{l:'Total Deposits',v:'$'+fmtNum(v.totaldeposits,0)+'M'}],
+      note:{type: ldr>95?'danger':ldr>85?'warn':ldr<60?'info':'good', text: ldr>95?'LDR sangat tinggi (>95%): bank ini sangat agresif menyalurkan dana — risiko likuiditas signifikan jika terjadi bank run atau penarikan deposit massal mendadak.':ldr>85?'LDR tinggi (85-95%): bank cukup agresif, perlu monitor sumber pendanaan alternatif (interbank, wholesale funding) sebagai cadangan likuiditas.':ldr<60?'LDR rendah (<60%): bank konservatif, dana banyak "menganggur" di aset likuid berimbal hasil rendah — bisa jadi sinyal permintaan kredit lemah atau strategi sangat risk-averse.':'LDR berada di rentang yang dianggap sehat secara umum oleh regulator dan analis perbankan (biasanya 60-85%).'},
+      chart:{xMin:200,xMax:2500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totaldeposits,hlines:[{y:85,color:COLORS.amber,dash:true},{y:95,color:COLORS.red,dash:true}],series:[{label:'LDR vs Total Deposits',color:COLORS.violet,pts}]}
     };
   }
 },
 {
-  id:'bankroe',ch:7,year:1980,who:'Analisis Perbankan Modern',name:'Bank ROE Decomposition (DuPont Banking)',
-  desc:'ROE bank didekomposisi berbeda dari korporat biasa: Net Interest Margin × Asset Utilization × Leverage adalah kerangka yang lebih relevan. ROA (Return on Assets) adalah metrik profitabilitas universal untuk perbandingan antar bank.',
-  tex:'ROE_{bank}=\\underbrace{\\frac{NI}{Assets}}_{ROA}\\times\\underbrace{\\frac{Assets}{Equity}}_{\\text{Equity Mult.}}',
+  id:'netchargeoff',ch:6,year:1970,who:'Praktik Credit Risk Perbankan',name:'Net Charge-Off Rate (NCO)',
+  desc:'Mengukur persentase pinjaman yang BENAR-BENAR dihapusbukukan (write-off) sebagai kerugian, dikurangi recovery — indikator KUALITAS PORTOFOLIO KREDIT bank yang paling konkret, berbeda dari provisi yang masih bersifat estimasi.',
+  tex:'NCO=\\frac{\\text{Charge-Offs}-\\text{Recoveries}}{\\text{Average Loans Outstanding}}',
   vars:[
-    {k:'bankni',label:'Net Income',min:10,max:2000,step:10,def:300,unit:'$M'},
-    {k:'bankassets',label:'Total Assets',min:1000,max:100000,step:1000,def:20000,unit:'$M'},
-    {k:'bankequity',label:'Total Equity',min:100,max:10000,step:100,def:1500,unit:'$M'}
+    {k:'chargeoffs',label:'Gross Charge-Offs',min:1,max:50,step:1,def:8,unit:'$M'},
+    {k:'recoveries',label:'Recoveries',min:0,max:20,step:0.5,def:3,unit:'$M'},
+    {k:'avgloans',label:'Average Loans Outstanding',min:200,max:2000,step:25,def:700,unit:'$M'}
   ],
   calc(v){
-    const roa = v.bankni/v.bankassets*100;
-    const leverage = v.bankassets/v.bankequity;
-    const roe = roa/100*leverage*100;
-    const pts = sweep(100,10000,50,eq=>roa/100*(v.bankassets/eq)*100);
+    const netCO = v.chargeoffs-v.recoveries;
+    const ncoRate = netCO/v.avgloans*100;
+    const pts = sweep(200,2000,60,al=>netCO/al*100);
     return {
-      big:fmtNum(roe,2),bigUnit:'%',bigLabel:'Bank Return on Equity',
-      subs:[{l:'Return on Assets (ROA)',v:fmtNum(roa,3)+'%'},{l:'Equity Multiplier (Assets/Eq)',v:fmtNum(leverage,1)+'x'},{l:'Net Income',v:'$'+fmtNum(v.bankni,0)+'M'}],
-      note:{type: roa<0.5?'danger':roe<10?'warn':'good', text: roa<0.5?'ROA bank <0.5%: di bawah threshold minimal untuk bank yang sehat — di banyak pasar, ROA <0.5% mengindikasikan bank under-earning relative terhadap risikonya.':roe<10?'ROE <10%: di bawah estimasi cost of equity tipikal bank — bank tidak menciptakan value bagi pemegang saham pada level ini.':'ROA dan ROE dalam zona sehat untuk bank commercial — kombinasi profitabilitas dan leverage yang manageable.'},
-      chart:{xMin:100,xMax:10000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.bankequity,hlines:[{y:15,color:COLORS.green,dash:true},{y:10,color:COLORS.faint,dash:true}],series:[{label:'Bank ROE vs Total Equity',color:COLORS.amber,pts}]}
+      big:fmtNum(ncoRate,3),bigUnit:'%',bigLabel:'Net Charge-Off Rate',
+      subs:[{l:'Net Charge-Offs',v:'$'+fmtNum(netCO,1)+'M'},{l:'Recovery Rate',v:fmtNum(v.recoveries/v.chargeoffs*100,1)+'%'}],
+      note:{type: ncoRate>2?'danger':ncoRate>1?'warn':'good', text: ncoRate>2?'NCO Rate sangat tinggi (>2%): kualitas portofolio kredit bank ini bermasalah serius — bandingkan dengan peer di segmen yang sama (consumer vs commercial lending punya benchmark NCO yang sangat berbeda).':ncoRate>1?'NCO Rate moderat-tinggi (1-2%): perlu pantau tren — kenaikan NCO yang konsisten antar kuartal adalah leading indicator deteriorasi kualitas aset sebelum tercermin di angka NPL.':'NCO Rate rendah (<1%): kualitas portofolio kredit terjaga baik, konsisten dengan underwriting standard yang solid.'},
+      chart:{xMin:200,xMax:2000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.avgloans,hlines:[{y:1,color:COLORS.amber,dash:true},{y:2,color:COLORS.red,dash:true}],series:[{label:'NCO Rate vs Average Loans',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'efficiencyratio',ch:6,year:1980,who:'Praktik Analisis Perbankan',name:'Efficiency Ratio (Bank)',
+  desc:'Versi perbankan dari "cost-to-income ratio" — mengukur berapa sen biaya operasional (non-bunga) yang dikeluarkan untuk menghasilkan setiap dollar revenue. Semakin RENDAH rasio ini, semakin efisien operasional bank tersebut.',
+  tex:'\\text{Efficiency Ratio}=\\frac{\\text{Non-Interest Expense}}{\\text{Net Interest Income}+\\text{Non-Interest Income}}',
+  vars:[
+    {k:'noninterestexp',label:'Non-Interest Expense',min:20,max:300,step:5,def:60,unit:'$M'},
+    {k:'totalrevenue',label:'Total Revenue (NII + fee income)',min:50,max:500,step:10,def:110,unit:'$M'}
+  ],
+  calc(v){
+    const effRatio = v.noninterestexp/v.totalrevenue*100;
+    const pts = sweep(50,500,60,rev=>v.noninterestexp/rev*100);
+    return {
+      big:fmtNum(effRatio,2),bigUnit:'%',bigLabel:'Efficiency Ratio',
+      subs:[{l:'Non-Interest Expense',v:'$'+fmtNum(v.noninterestexp,1)+'M'},{l:'Total Revenue',v:'$'+fmtNum(v.totalrevenue,1)+'M'}],
+      note:{type: effRatio>65?'warn':effRatio<50?'good':'info', text: effRatio>65?'Efficiency Ratio tinggi (>65%): bank ini relatif TIDAK efisien — porsi besar revenue habis untuk biaya operasional, sedikit margin tersisa untuk profitabilitas bersih.':effRatio<50?'Efficiency Ratio rendah (<50%): bank ini sangat efisien secara operasional — biasanya hasil dari skala ekonomi besar, digitalisasi proses, atau model bisnis dengan biaya overhead minimal.':'Efficiency Ratio berada di rentang yang umum dianggap "sehat" untuk bank komersial tradisional (50-65%).'},
+      chart:{xMin:50,xMax:500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totalrevenue,hlines:[{y:50,color:COLORS.green,dash:true},{y:65,color:COLORS.red,dash:true}],series:[{label:'Efficiency Ratio vs Total Revenue',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'allowanceratio',ch:6,year:1980,who:'Praktik Provisioning Perbankan (CECL/IFRS 9)',name:'Allowance for Loan Losses Ratio',
+  desc:'Mengukur seberapa besar "cadangan" yang sudah dibentuk bank untuk mengantisipasi potensi kerugian kredit, relatif terhadap total portofolio pinjaman — metrik kunci untuk menilai KONSERVATISME provisioning bank di bawah standar CECL/IFRS 9.',
+  tex:'\\text{Allowance Ratio}=\\frac{\\text{Allowance for Loan Losses}}{\\text{Total Loans}}',
+  vars:[
+    {k:'allowance2',label:'Allowance for Loan Losses',min:2,max:80,step:1,def:14,unit:'$M'},
+    {k:'totalloans2',label:'Total Loans',min:200,max:2000,step:25,def:700,unit:'$M'}
+  ],
+  calc(v){
+    const allowanceRatio = v.allowance2/v.totalloans2*100;
+    const pts = sweep(200,2000,60,tl=>v.allowance2/tl*100);
+    return {
+      big:fmtNum(allowanceRatio,2),bigUnit:'%',bigLabel:'Allowance for Loan Losses Ratio',
+      subs:[{l:'Allowance Amount',v:'$'+fmtNum(v.allowance2,1)+'M'},{l:'Total Loans',v:'$'+fmtNum(v.totalloans2,0)+'M'}],
+      note:{type: allowanceRatio<1?'warn':allowanceRatio>3?'info':'good', text: allowanceRatio<1?'Allowance ratio rendah (<1%): bank mungkin under-provisioned relatif terhadap risiko portofolionya — perlu cek kualitas kredit underlying dan tren historis NCO untuk menilai kecukupannya.':allowanceRatio>3?'Allowance ratio tinggi (>3%): bank sangat konservatif dalam provisioning — bisa jadi portofolio memang berisiko lebih tinggi (consumer/subprime), atau manajemen mengambil pendekatan sangat prudent.':'Allowance ratio berada di rentang yang umum untuk portofolio kredit komersial dengan kualitas rata-rata baik.'},
+      chart:{xMin:200,xMax:2000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totalloans2,series:[{label:'Allowance Ratio vs Total Loans',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'lcr',ch:6,year:2010,who:'Basel Committee (Basel III post-2008 reform)',name:'Liquidity Coverage Ratio (LCR)',
+  desc:'Regulasi pasca krisis 2008 yang mewajibkan bank memegang aset likuid berkualitas tinggi (HQLA) yang cukup untuk menutupi outflow kas bersih selama skenario stres 30 hari — dirancang khusus untuk mencegah bank run seperti yang terjadi pada Lehman Brothers/Bear Stearns.',
+  tex:'LCR=\\frac{\\text{High-Quality Liquid Assets (HQLA)}}{\\text{Net Cash Outflows (30 hari stres)}}',
+  vars:[
+    {k:'hqla',label:'High-Quality Liquid Assets',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'netoutflow',label:'Net Cash Outflows (skenario stres 30hr)',min:50,max:400,step:10,def:150,unit:'$M'}
+  ],
+  calc(v){
+    const lcr = v.hqla/v.netoutflow*100;
+    const pts = sweep(50,400,60,no=>v.hqla/no*100);
+    return {
+      big:fmtNum(lcr,2),bigUnit:'%',bigLabel:'Liquidity Coverage Ratio',
+      subs:[{l:'Basel III Minimum',v:'100.00%'},{l:'HQLA',v:'$'+fmtNum(v.hqla,1)+'M'}],
+      note:{type: lcr<100?'danger':lcr<120?'warn':'good', text: lcr<100?'LCR DI BAWAH minimum regulasi (100%): bank ini tidak punya cukup aset likuid untuk menyerap stres likuiditas 30 hari sesuai standar Basel III — risiko regulasi serius dan kemungkinan butuh tindakan korektif segera.':lcr<120?'LCR di atas minimum tapi buffer terbatas — bank perlu menjaga akses ke pasar pendanaan tambahan sebagai mitigasi jika kondisi makro memburuk.':'LCR sehat dengan buffer signifikan di atas requirement — bank punya cushion likuiditas yang kuat untuk menghadapi skenario stres jangka pendek.'},
+      chart:{xMin:50,xMax:400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.netoutflow,hlines:[{y:100,color:COLORS.red,dash:true}],series:[{label:'LCR vs Net Cash Outflows',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'tier1leverage',ch:6,year:1988,who:'Basel Committee',name:'Tier 1 Leverage Ratio',
+  desc:'Berbeda dari CAR yang memakai risk-WEIGHTED assets, Tier 1 Leverage Ratio memakai TOTAL aset (tidak ditimbang risiko) — dirancang sebagai "backstop" sederhana yang tidak bisa dimanipulasi lewat model risk-weighting internal bank.',
+  tex:'\\text{Tier 1 Leverage Ratio}=\\frac{\\text{Tier 1 Capital}}{\\text{Total Average Assets}}',
+  vars:[
+    {k:'tier1b',label:'Tier 1 Capital',min:20,max:300,step:5,def:80,unit:'$M'},
+    {k:'totalassetsb',label:'Total Average Assets (unweighted)',min:500,max:5000,step:50,def:1800,unit:'$M'}
+  ],
+  calc(v){
+    const leverageRatio = v.tier1b/v.totalassetsb*100;
+    const pts = sweep(500,5000,60,ta=>v.tier1b/ta*100);
+    return {
+      big:fmtNum(leverageRatio,2),bigUnit:'%',bigLabel:'Tier 1 Leverage Ratio',
+      subs:[{l:'Tier 1 Capital',v:'$'+fmtNum(v.tier1b,1)+'M'},{l:'Basel III Minimum',v:'3.00% (umumnya 4-5% untuk bank besar)'}],
+      note:{type: leverageRatio<3?'danger':leverageRatio<5?'warn':'good', text: leverageRatio<3?'Tier 1 Leverage Ratio DI BAWAH minimum absolut Basel III (3%) — kondisi sangat serius, bank kemungkinan sudah dalam pengawasan ketat regulator.':leverageRatio<5?'Leverage ratio di atas minimum absolut tapi di bawah threshold yang lebih ketat (5%) yang biasanya disyaratkan untuk bank sistemik penting (G-SIB) — periksa klasifikasi bank ini.':'Leverage ratio sehat — metrik ini penting sebagai "sanity check" terhadap CAR, karena tidak bisa dimanipulasi lewat asumsi risk-weighting yang agresif.'},
+      chart:{xMin:500,xMax:5000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.totalassetsb,hlines:[{y:3,color:COLORS.red,dash:true},{y:5,color:COLORS.amber,dash:true}],series:[{label:'Tier 1 Leverage Ratio vs Total Assets',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'provisioncoverage',ch:6,year:1990,who:'Praktik Risk Management Perbankan',name:'NPL Coverage Ratio (Provision Coverage)',
+  desc:'Mengukur seberapa besar cadangan kerugian (allowance) yang sudah dibentuk RELATIF terhadap pinjaman yang SUDAH bermasalah (Non-Performing Loans) — rasio >100% berarti bank punya cadangan LEBIH dari cukup untuk menutupi seluruh NPL eksisting.',
+  tex:'\\text{NPL Coverage}=\\frac{\\text{Allowance for Loan Losses}}{\\text{Non-Performing Loans}}',
+  vars:[
+    {k:'allowance3',label:'Allowance for Loan Losses',min:5,max:100,step:1,def:30,unit:'$M'},
+    {k:'npl',label:'Non-Performing Loans (NPL)',min:5,max:120,step:1,def:25,unit:'$M'}
+  ],
+  calc(v){
+    const coverage = v.allowance3/v.npl*100;
+    const pts = sweep(5,120,60,n=>v.allowance3/n*100);
+    return {
+      big:fmtNum(coverage,1),bigUnit:'%',bigLabel:'NPL Coverage Ratio',
+      subs:[{l:'Allowance',v:'$'+fmtNum(v.allowance3,1)+'M'},{l:'NPL',v:'$'+fmtNum(v.npl,1)+'M'}],
+      note:{type: coverage<70?'danger':coverage<100?'warn':'good', text: coverage<70?'Coverage ratio rendah (<70%): cadangan TIDAK CUKUP untuk menutupi NPL yang sudah teridentifikasi — risiko provisi tambahan besar di masa depan yang akan menekan profitabilitas.':coverage<100?'Coverage ratio di bawah 100%: bank punya sebagian cadangan, tapi belum cukup menutupi SELURUH NPL — wajar jika sebagian NPL diharapkan recover melalui collateral, tapi tetap perlu dipantau.':'Coverage ratio >100%: bank punya cadangan lebih dari cukup untuk menutupi seluruh NPL eksisting — pendekatan provisioning yang konservatif dan prudent.'},
+      chart:{xMin:5,xMax:120,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.npl,hlines:[{y:100,color:COLORS.green,dash:true},{y:70,color:COLORS.red,dash:true}],series:[{label:'NPL Coverage vs Non-Performing Loans',color:COLORS.cyan,pts}]}
     };
   }
 }
 ]);
 
-/* ===================== BAB 8: REAL ESTATE & REIT METRICS (5) ===================== */
+/* ===================== BAB 7: M&A & LBO ADVANCED (8) ===================== */
 addF([
 {
-  id:'ffo',ch:8,year:1991,who:'NAREIT (National Association of REITs)',name:'FFO & AFFO (Funds From Operations)',
-  desc:'FFO adalah metrik laba standar REIT — menambahkan kembali depresiasi real estate ke net income karena properti biasanya TIDAK menurun nilainya seperti aset manufaktur. AFFO (Adjusted FFO) lebih konservatif dengan mengurangi capex pemeliharaan.',
-  tex:'FFO=NI+\\text{Depreciation}_{RE}-\\text{Gains on Sale},\\quad AFFO=FFO-\\text{Capex}_{maintenance}',
+  id:'lboirr',ch:7,year:1980,who:'Praktik Private Equity (KKR, Blackstone era)',name:'LBO Returns — MOIC & IRR',
+  desc:'Mengukur return investasi private equity dalam Leveraged Buyout — MOIC (Multiple on Invested Capital) mengukur total pengembalian modal, IRR memperhitungkan FAKTOR WAKTU. Keduanya didorong oleh 3 lever: EBITDA growth, multiple expansion, dan debt paydown.',
+  tex:'MOIC=\\frac{\\text{Exit Equity Value}}{\\text{Entry Equity Invested}},\\quad IRR=MOIC^{1/n}-1',
   vars:[
-    {k:'reitni',label:'Net Income',min:10,max:500,step:5,def:80,unit:'$M'},
-    {k:'reitdep',label:'Real Estate Depreciation',min:10,max:300,step:5,def:120,unit:'$M'},
-    {k:'gainsale',label:'Gains on Property Sale',min:0,max:100,step:5,def:20,unit:'$M'},
-    {k:'maintcapex',label:'Maintenance CapEx',min:0,max:100,step:5,def:25,unit:'$M'},
-    {k:'reitshares',label:'Shares Outstanding',min:10,max:500,step:5,def:100,unit:'M'}
+    {k:'entryebitda',label:'Entry EBITDA',min:30,max:300,step:5,def:100,unit:'$M'},
+    {k:'entrymult',label:'Entry Multiple',min:5,max:15,step:0.5,def:8,unit:'x'},
+    {k:'debtpct',label:'% Pendanaan Utang (Leverage)',min:30,max:85,step:5,def:60,unit:'%'},
+    {k:'exitebitda',label:'Exit EBITDA',min:30,max:400,step:5,def:130,unit:'$M'},
+    {k:'exitmult',label:'Exit Multiple',min:5,max:18,step:0.5,def:9,unit:'x'},
+    {k:'debtpaydownpct',label:'% Utang Terlunasi saat Exit',min:0,max:100,step:5,def:50,unit:'%'},
+    {k:'holdyears',label:'Holding Period',min:2,max:8,step:1,def:5,unit:' thn'}
   ],
   calc(v){
-    const ffo = v.reitni+v.reitdep-v.gainsale;
-    const affo = ffo-v.maintcapex;
-    const ffoPerShare = ffo/v.reitshares;
-    const affoPerShare = affo/v.reitshares;
-    const pts = sweep(10,300,50,dep=>v.reitni+dep-v.gainsale);
+    const purchasePrice = v.entryebitda*v.entrymult;
+    const debtAmount = purchasePrice*v.debtpct/100;
+    const equityInvested = purchasePrice-debtAmount;
+    const exitEV = v.exitebitda*v.exitmult;
+    const remainingDebt = debtAmount*(1-v.debtpaydownpct/100);
+    const exitEquityValue = exitEV-remainingDebt;
+    const moic = exitEquityValue/equityInvested;
+    const irr = Math.pow(moic,1/v.holdyears)-1;
+    const pts = sweep(2,8,60,n=>(Math.pow(moic,1/n)-1)*100);
     return {
-      big:fmtNum(ffo,1),bigUnit:'$M',bigLabel:'Funds From Operations (FFO)',
-      subs:[{l:'AFFO',v:'$'+fmtNum(affo,1)+'M'},{l:'FFO per Share',v:'$'+fmtNum(ffoPerShare,2)},{l:'AFFO per Share',v:'$'+fmtNum(affoPerShare,2)},{l:'Payout Ratio (vs FFO)',v:fmtNum(v.reitni/ffo*100,1)+'%'}],
-      note:{type: affo<0?'danger':affo/ffo<0.7?'warn':'good', text: affo<0?'AFFO NEGATIF: setelah maintenance capex, REIT tidak menghasilkan cukup cash — dividend sustainability perlu dipertanyakan.':affo/ffo<0.7?'AFFO jauh lebih kecil dari FFO: maintenance capex cukup besar — AFFO lebih konservatif dan lebih baik dipakai untuk menilai dividend sustainability.':'FFO dan AFFO keduanya solid — REIT menghasilkan cash operasional yang kuat setelah kebutuhan pemeliharaan.'},
-      chart:{xMin:10,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.reitdep,series:[{label:'FFO vs Real Estate Depreciation',color:COLORS.green,pts}]}
+      big:fmtNum(irr*100,2),bigUnit:'%',bigLabel:'IRR (LBO)',
+      subs:[{l:'MOIC',v:fmtNum(moic,2)+'x'},{l:'Equity Invested',v:'$'+fmtNum(equityInvested,1)+'M'},{l:'Exit Equity Value',v:'$'+fmtNum(exitEquityValue,1)+'M'}],
+      note:{type: irr<0.15?'warn':irr>0.30?'good': 'info', text: irr<0.15?'IRR di bawah 15%: target return tipikal PE fund (umumnya 20-25%+) tidak tercapai — leverage tinggi TIDAK otomatis menjamin return tinggi jika EBITDA growth atau multiple expansion lemah.':irr>0.30?'IRR sangat tinggi (>30%): kombinasi leverage, growth, dan multiple expansion bekerja optimal — tapi pastikan asumsi exit multiple realistis, karena ini variabel paling tidak pasti dalam model LBO.':'IRR berada di rentang target tipikal PE fund — kombinasi 3 value driver (growth, multiple, deleveraging) menghasilkan return yang sehat.'},
+      chart:{xMin:2,xMax:8,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.holdyears,series:[{label:'IRR vs Holding Period (MOIC tetap)',color:COLORS.violet,pts}]}
     };
   }
 },
 {
-  id:'caprate',ch:8,year:1960,who:'Real Estate Valuation Practice',name:'Cap Rate & Property Valuation',
-  desc:'Capitalization Rate (Cap Rate) adalah yield yang dipakai untuk menilai properti penghasil income — setara dengan "earnings yield" di saham. Cap Rate rendah = properti mahal (pasar optimis), Cap Rate tinggi = properti murah atau berisiko tinggi.',
-  tex:'\\text{Cap Rate}=\\frac{NOI}{\\text{Property Value}},\\quad V=\\frac{NOI}{\\text{Cap Rate}}',
+  id:'synergynpv',ch:7,year:1980,who:'Praktik M&A Strategic Valuation',name:'NPV of Synergies',
+  desc:'Mengukur nilai sekarang dari penghematan biaya atau peningkatan revenue yang DIHARAPKAN muncul dari kombinasi dua perusahaan pasca-merger — sering jadi justifikasi utama untuk premium akuisisi yang dibayarkan acquirer.',
+  tex:'PV_{synergy}=\\sum_{t=1}^{n}\\frac{\\text{Synergy}_t}{(1+r)^t}',
   vars:[
-    {k:'grossrent',label:'Gross Rental Income',min:50,max:5000,step:25,def:500,unit:'$K'},
-    {k:'vacancypct',label:'Vacancy Rate',min:0,max:30,step:0.5,def:5,unit:'%'},
-    {k:'opexpct',label:'Operating Expenses (% of EGI)',min:20,max:60,step:1,def:35,unit:'%'},
-    {k:'caprate',label:'Market Cap Rate',min:3,max:12,step:0.25,def:5.5,unit:'%'}
+    {k:'annualsynergy',label:'Annual Synergy (run-rate)',min:5,max:100,step:5,def:20,unit:'$M'},
+    {k:'synergygrowth',label:'Growth Rate Synergy',min:0,max:8,step:0.5,def:2,unit:'%'},
+    {k:'discrate2',label:'Discount Rate',min:5,max:18,step:0.5,def:10,unit:'%'},
+    {k:'synergyyears',label:'Periode Proyeksi',min:3,max:15,step:1,def:10,unit:' thn'}
   ],
   calc(v){
-    const egi = v.grossrent*(1-v.vacancypct/100);
-    const opex = egi*v.opexpct/100;
-    const noi = egi-opex;
-    const propertyValue = noi/(v.caprate/100);
-    const grossYield = v.grossrent/propertyValue*100;
-    const pts = sweep(3,12,50,cr=>noi/(cr/100)/1000);
+    let pv=0;
+    for(let t=0;t<v.synergyyears;t++){
+      pv += v.annualsynergy*Math.pow(1+v.synergygrowth/100,t)/Math.pow(1+v.discrate2/100,t+1);
+    }
+    const pts = sweep(5,18,60,r=>{
+      let p=0;
+      for(let t=0;t<v.synergyyears;t++){ p+=v.annualsynergy*Math.pow(1+v.synergygrowth/100,t)/Math.pow(1+r/100,t+1); }
+      return p;
+    });
     return {
-      big:fmtNum(propertyValue/1000,2),bigUnit:'$M',bigLabel:'Implied Property Value',
-      subs:[{l:'Net Operating Income (NOI)',v:'$'+fmtNum(noi,0)+'K'},{l:'Effective Gross Income',v:'$'+fmtNum(egi,0)+'K'},{l:'Gross Rental Yield',v:fmtNum(grossYield,2)+'%'},{l:'NOI Margin',v:fmtNum(noi/egi*100,1)+'%'}],
-      note:{type: v.caprate<4?'warn':v.caprate>9?'info':'good', text: v.caprate<4?'Cap rate sangat rendah (<4%): properti premium di pasar core (CBD Grade A) — valuasi tinggi mencerminkan ekspektasi growth sewa atau risk premium sangat rendah. Sensitif terhadap kenaikan suku bunga.':v.caprate>9?'Cap rate tinggi (>9%): bisa jadi properti distressed, lokasi sekunder, atau sektor berisiko tinggi (hospitality, retail) — perlu due diligence mendalam sebelum menganggap ini "cheap".':'Cap rate dalam zona wajar untuk properti commercial standar di pasar berkembang seperti Indonesia.'},
-      chart:{xMin:3,xMax:12,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.caprate,series:[{label:'Property Value ($M) vs Cap Rate',color:COLORS.cyan,pts}]}
+      big:fmtNum(pv,2),bigUnit:'$M',bigLabel:'PV of Synergies',
+      subs:[{l:'Annual Synergy (Tahun 1)',v:'$'+fmtNum(v.annualsynergy,1)+'M'},{l:'Total Undiscounted (10yr)',v:'$'+fmtNum(v.annualsynergy*v.synergyyears,1)+'M (approx)'}],
+      note:{type:'info', text: 'PERINGATAN KLASIK M&A: studi akademik (McKinsey, KPMG) secara konsisten menunjukkan 60-70% dari merger GAGAL mencapai estimasi synergy yang dijanjikan kepada investor saat deal diumumkan — selalu terapkan discount/haircut signifikan (30-50%) terhadap estimasi synergy management sebelum memasukkannya ke valuasi akuisisi.'},
+      chart:{xMin:5,xMax:18,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.discrate2,series:[{label:'PV Synergies vs Discount Rate',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'controlpremium',ch:7,year:1980,who:'Praktik Valuasi M&A',name:'Control Premium',
+  desc:'Premium yang dibayarkan acquirer DI ATAS harga pasar pra-pengumuman — merefleksikan nilai dari MENGONTROL perusahaan (bisa mengubah strategi, struktur modal, manajemen) yang tidak tersedia bagi pemegang saham minoritas biasa.',
+  tex:'\\text{Control Premium}=\\frac{\\text{Offer Price}-\\text{Pre-Announcement Price}}{\\text{Pre-Announcement Price}}',
+  vars:[
+    {k:'offerprice',label:'Offer Price per Share',min:10,max:200,step:1,def:65,unit:'$'},
+    {k:'preprice',label:'Harga Pra-Pengumuman',min:10,max:180,step:1,def:50,unit:'$'}
+  ],
+  calc(v){
+    const premium = (v.offerprice-v.preprice)/v.preprice*100;
+    const pts = sweep(10,180,60,p=>(v.offerprice-p)/p*100);
+    return {
+      big:fmtNum(premium,2),bigUnit:'%',bigLabel:'Control Premium',
+      subs:[{l:'Offer Price',v:'$'+fmtNum(v.offerprice,2)},{l:'Pre-Announcement Price',v:'$'+fmtNum(v.preprice,2)}],
+      note:{type: premium>50?'warn':premium<15?'info':'good', text: premium>50?'Premium sangat besar (>50%): pasar mungkin merespons skeptis terhadap kemampuan acquirer menciptakan value yang sepadan — historical data menunjukkan premium ekstrem sering berkorelasi dengan post-merger value destruction.':premium<15?'Premium relatif kecil (<15%): bisa jadi sinyal target dalam posisi tawar-menawar lemah, ATAU deal bersifat "merger of equals" tanpa dominasi kontrol yang jelas.':'Premium berada di rentang historis tipikal untuk transaksi M&A strategis (umumnya 20-40%).'},
+      chart:{xMin:10,xMax:180,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.preprice,hlines:[{y:30,color:COLORS.faint,dash:true}],series:[{label:'Control Premium vs Harga Pra-Pengumuman',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'evbridge',ch:7,year:1990,who:'Praktik Investment Banking (Valuation Bridge)',name:'Enterprise Value ↔ Equity Value Bridge',
+  desc:'"Jembatan" standar yang menghubungkan Equity Value (nilai pasar saham) dengan Enterprise Value (nilai operasional bisnis murni, independen struktur modal) — esensial dipahami sebelum membandingkan multiple antar perusahaan dengan struktur modal berbeda.',
+  tex:'EV=\\text{Equity Value}+\\text{Total Debt}-\\text{Cash}+\\text{Minority Interest}+\\text{Preferred Stock}',
+  vars:[
+    {k:'equityval2',label:'Equity Value (Market Cap)',min:100,max:2000,step:25,def:800,unit:'$M'},
+    {k:'totaldebt2',label:'Total Debt',min:0,max:1000,step:25,def:300,unit:'$M'},
+    {k:'cashbal',label:'Cash & Equivalents',min:0,max:500,step:10,def:100,unit:'$M'},
+    {k:'minorityint',label:'Minority Interest',min:0,max:100,step:5,def:20,unit:'$M'},
+    {k:'preferredstock',label:'Preferred Stock',min:0,max:200,step:5,def:30,unit:'$M'}
+  ],
+  calc(v){
+    const ev = v.equityval2+v.totaldebt2-v.cashbal+v.minorityint+v.preferredstock;
+    const netDebt = v.totaldebt2-v.cashbal;
+    const pts = sweep(0,1000,60,d=>v.equityval2+d-v.cashbal+v.minorityint+v.preferredstock);
+    return {
+      big:fmtNum(ev,1),bigUnit:'$M',bigLabel:'Enterprise Value',
+      subs:[{l:'Net Debt',v:'$'+fmtNum(netDebt,1)+'M'},{l:'EV - Equity Value (gap)',v:'$'+fmtNum(ev-v.equityval2,1)+'M'}],
+      note:{type: netDebt<0?'good':'info', text: netDebt<0?'Net Debt NEGATIF (cash > debt): perusahaan dalam posisi "net cash" — EV lebih kecil dari Equity Value, situasi umum pada perusahaan tech matang dengan cash pile besar (seperti banyak perusahaan teknologi besar).':'Selalu gunakan EV (bukan Equity Value) saat membandingkan multiple seperti EV/EBITDA antar perusahaan — Equity Value/EBITDA akan menyesatkan karena tidak netral terhadap perbedaan struktur modal.'},
+      chart:{xMin:0,xMax:1000,yMin:v.equityval2-v.cashbal,yMax:Math.max(...pts.map(p=>p.y))*1.05,vline:v.totaldebt2,series:[{label:'EV vs Total Debt',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'bankruptcywaterfall',ch:7,year:1900,who:'US Bankruptcy Code (Absolute Priority Rule)',name:'Bankruptcy Recovery Waterfall',
+  desc:'Mengikuti "Absolute Priority Rule" — urutan klaim dalam likuidasi/restrukturisasi: secured creditors dibayar PENUH dulu sebelum unsecured creditors menerima APAPUN, dan equity holders adalah yang TERAKHIR (sering menerima $0 jika aset tidak cukup).',
+  tex:'\\text{Recovery}_{class}=\\min\\left(1,\\frac{\\text{Aset Tersisa}}{\\text{Klaim Kelas Tersebut}}\\right)',
+  vars:[
+    {k:'liquidationvalue',label:'Total Nilai Likuidasi Aset',min:100,max:1500,step:25,def:500,unit:'$M'},
+    {k:'secureddebt',label:'Secured Debt (klaim prioritas 1)',min:50,max:800,step:25,def:300,unit:'$M'},
+    {k:'unsecureddebt',label:'Unsecured Debt (klaim prioritas 2)',min:50,max:800,step:25,def:250,unit:'$M'}
+  ],
+  calc(v){
+    const securedRecovery = Math.min(1, v.liquidationvalue/v.secureddebt)*100;
+    const remainingAfterSecured = Math.max(0, v.liquidationvalue-v.secureddebt);
+    const unsecuredRecovery = Math.min(1, remainingAfterSecured/v.unsecureddebt)*100;
+    const remainingForEquity = Math.max(0, remainingAfterSecured-v.unsecureddebt);
+    const pts = sweep(50,800,60,sd=>Math.min(1,v.liquidationvalue/sd)*100);
+    return {
+      big:fmtNum(securedRecovery,1),bigUnit:'%',bigLabel:'Secured Creditor Recovery',
+      subs:[{l:'Unsecured Recovery',v:fmtNum(unsecuredRecovery,1)+'%'},{l:'Sisa untuk Equity',v:'$'+fmtNum(remainingForEquity,1)+'M'}],
+      note:{type: unsecuredRecovery<50?'danger':unsecuredRecovery<90?'warn':'good', text: unsecuredRecovery<50?'Unsecured creditors recovery <50%: kerugian signifikan bagi pemegang obligasi unsecured/bondholder — equity holders hampir pasti menerima $0 (absolute priority rule).':unsecuredRecovery<90?'Unsecured recovery moderat: secured creditors aman penuh, unsecured menanggung sebagian kerugian, equity holders kemungkinan besar tetap menerima $0.':'Recovery tinggi untuk semua kelas kreditur — kemungkinan masih ada sisa nilai untuk equity holders, situasi yang relatif jarang dalam kebangkrutan riil.'},
+      chart:{xMin:50,xMax:800,yMin:0,yMax:105,vline:v.secureddebt,hlines:[{y:100,color:COLORS.green,dash:true}],series:[{label:'Secured Recovery vs Secured Debt Claims',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'goodwillimpair',ch:7,year:2001,who:'FASB (ASC 350, post-SFAS 142)',name:'Goodwill Impairment Test',
+  desc:'Setelah akuisisi, goodwill (selisih harga beli di atas fair value aset bersih) harus diuji impairment-nya minimal setahun sekali — jika fair value reporting unit TURUN di bawah carrying value, perusahaan harus mencatat write-down goodwill yang menekan laba.',
+  tex:'\\text{Impairment}=\\max(0,\\text{Carrying Value}-\\text{Fair Value of Reporting Unit})',
+  vars:[
+    {k:'carryingvalue',label:'Carrying Value (Goodwill + Net Assets)',min:100,max:1500,step:25,def:600,unit:'$M'},
+    {k:'fairvalue2',label:'Fair Value Reporting Unit (estimasi terkini)',min:50,max:1500,step:25,def:450,unit:'$M'},
+    {k:'goodwillbalance',label:'Goodwill Balance (recorded)',min:50,max:800,step:25,def:250,unit:'$M'}
+  ],
+  calc(v){
+    const impairmentIndicated = Math.max(0, v.carryingvalue-v.fairvalue2);
+    const impairmentCharge = Math.min(impairmentIndicated, v.goodwillbalance);
+    const pts = sweep(50,1500,60,fv=>Math.min(Math.max(0,v.carryingvalue-fv),v.goodwillbalance));
+    return {
+      big:fmtNum(impairmentCharge,1),bigUnit:'$M',bigLabel:'Goodwill Impairment Charge',
+      subs:[{l:'Carrying Value',v:'$'+fmtNum(v.carryingvalue,1)+'M'},{l:'Fair Value Saat Ini',v:'$'+fmtNum(v.fairvalue2,1)+'M'}],
+      note:{type: impairmentCharge>0?'danger':'good', text: impairmentCharge>0?'Impairment TERINDIKASI: fair value reporting unit sudah turun di bawah carrying value — perusahaan WAJIB mencatat write-down ini sebagai non-cash charge yang menekan net income (meski tidak mempengaruhi cash flow langsung).':'Tidak ada impairment terindikasi saat ini — fair value reporting unit masih di atas carrying value, meski kondisi ini perlu di-test ulang setiap periode pelaporan.'},
+      chart:{xMin:50,xMax:1500,yMin:0,yMax:v.goodwillbalance*1.1,vline:v.fairvalue2,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Impairment Charge vs Fair Value',color:COLORS.red,pts}]}
     };
   }
 }
 ]);
 
-/* ===================== BAB 9: FOREX & INTERNATIONAL FINANCE (5) ===================== */
+/* ===================== BAB 8: LEASE & PENSION ACCOUNTING (7) ===================== */
 addF([
 {
-  id:'ppp',ch:9,year:1918,who:'Gustav Cassel',name:'Purchasing Power Parity (PPP)',
-  desc:'PPP menyatakan bahwa kurs valuta asing seharusnya bergerak untuk menyamakan daya beli antar negara. Relative PPP: negara dengan inflasi lebih tinggi akan mengalami depresiasi mata uangnya secara proporsional.',
-  tex:'\\frac{S_1}{S_0}=\\frac{(1+\\pi_d)}{(1+\\pi_f)}',
+  id:'capitalizedlease',ch:8,year:2019,who:'FASB ASC 842 / IFRS 16',name:'Capitalized Lease Liability',
+  desc:'Sejak standar akuntansi baru ASC 842 (AS) dan IFRS 16 (internasional) berlaku, HAMPIR SEMUA lease operasional harus dikapitalisasi di balance sheet sebagai liability — mengubah total drastis bagaimana analyst membaca leverage perusahaan yang banyak menyewa aset (retailer, airlines).',
+  tex:'\\text{Lease Liability}=\\sum_{t=1}^{n}\\frac{\\text{Lease Payment}_t}{(1+r)^t}',
   vars:[
-    {k:'spotrate',label:'Spot Rate Saat Ini (IDR/USD)',min:10000,max:20000,step:100,def:15500,unit:''},
-    {k:'infl_d',label:'Inflasi Domestik (IDR)',min:1,max:15,step:0.25,def:3.5,unit:'%'},
-    {k:'infl_f',label:'Inflasi Foreign (USD)',min:0,max:8,step:0.25,def:2.5,unit:'%'},
-    {k:'years_ppp',label:'Horizon (tahun)',min:1,max:10,step:1,def:3,unit:' thn'}
+    {k:'annualpayment',label:'Annual Lease Payment',min:5,max:150,step:5,def:50,unit:'$M'},
+    {k:'discountrate3',label:'Discount Rate (incremental borrowing rate)',min:2,max:12,step:0.25,def:6,unit:'%'},
+    {k:'leaseterm',label:'Lease Term',min:2,max:20,step:1,def:8,unit:' thn'}
   ],
   calc(v){
-    const expectedRate = v.spotrate*Math.pow((1+v.infl_d/100)/(1+v.infl_f/100), v.years_ppp);
-    const annualChange = (Math.pow(expectedRate/v.spotrate, 1/v.years_ppp)-1)*100;
-    const pts = sweep(1,10,9,yr=>v.spotrate*Math.pow((1+v.infl_d/100)/(1+v.infl_f/100),yr));
+    let liability=0;
+    for(let t=1;t<=v.leaseterm;t++){ liability += v.annualpayment/Math.pow(1+v.discountrate3/100,t); }
+    const totalUndiscounted = v.annualpayment*v.leaseterm;
+    const pts = sweep(2,12,60,r=>{
+      let l=0;
+      for(let t=1;t<=v.leaseterm;t++){ l+=v.annualpayment/Math.pow(1+r/100,t); }
+      return l;
+    });
     return {
-      big:fmtNum(expectedRate,0),bigUnit:'',bigLabel:'Projected Spot Rate (IDR/USD)',
-      subs:[{l:'Diferensial Inflasi',v:fmtNum(v.infl_d-v.infl_f,2)+'pp'},{l:'Expected Annual Depreciation',v:fmtNum(annualChange,2)+'%'},{l:'Total Change over '+v.years_ppp+' yr',v:fmtNum((expectedRate/v.spotrate-1)*100,1)+'%'}],
-      note:{type: annualChange>5?'warn':'info', text: annualChange>5?'Depresiasi expected cukup besar (>5%/thn) akibat diferensial inflasi — perusahaan dengan utang USD dan revenue IDR (currency mismatch) menghadapi risiko forex signifikan.':'PPP adalah teori jangka panjang — dalam jangka pendek, kurs bisa sangat menyimpang dari PPP akibat capital flows, sentiment, dan faktor cyclical.'},
-      chart:{xMin:1,xMax:10,yMin:Math.min(...pts.map(p=>p.y))*0.95,yMax:Math.max(...pts.map(p=>p.y))*1.05,vline:v.years_ppp,series:[{label:'Projected IDR/USD vs Tahun (PPP)',color:COLORS.amber,pts}]}
+      big:fmtNum(liability,2),bigUnit:'$M',bigLabel:'Capitalized Lease Liability',
+      subs:[{l:'Total Pembayaran Undiscounted',v:'$'+fmtNum(totalUndiscounted,1)+'M'},{l:'Right-of-Use Asset (inception)',v:'$'+fmtNum(liability,1)+'M (≈ sama)'}],
+      note:{type:'info', text: 'Implikasi krusial bagi analyst: SEBELUM ASC 842/IFRS 16 (pra-2019), lease operasional ini "off-balance-sheet" — perusahaan terlihat punya leverage rendah meski secara EKONOMIS punya obligasi pembayaran tetap jangka panjang. Sekarang liability ini WAJIB muncul di balance sheet, membuat rasio seperti Debt/EBITDA naik signifikan untuk perusahaan yang banyak menyewa aset (retailer, restoran, airlines).'},
+      chart:{xMin:2,xMax:12,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.discountrate3,hlines:[{y:totalUndiscounted,color:COLORS.faint,dash:true}],series:[{label:'Lease Liability vs Discount Rate',color:COLORS.cyan,pts}]}
     };
   }
 },
 {
-  id:'irp',ch:9,year:1923,who:'John Maynard Keynes',name:'Interest Rate Parity (IRP) & Forward Rate',
-  desc:'IRP menyatakan bahwa forward rate valuta asing harus mencerminkan diferensial suku bunga antar negara — jika tidak, arbitrage akan terjadi. Forward premium/discount setara dengan perbedaan suku bunga.',
-  tex:'F=S_0\\times\\frac{(1+r_d)}{(1+r_f)}',
+  id:'ebitdar',ch:8,year:2000,who:'Praktik Analisis Sektor Retail/Airlines',name:'EBITDAR (EBITDA + Rent)',
+  desc:'Metrik yang menambahkan kembali BIAYA SEWA ke EBITDA — dipakai untuk membandingkan profitabilitas operasional antar perusahaan yang punya kebijakan SEWA vs BELI aset yang sangat berbeda (umum di analisis sektor retail, restoran, dan airlines).',
+  tex:'EBITDAR=EBITDA+\\text{Rent Expense}',
   vars:[
-    {k:'spotfx',label:'Spot Rate (IDR/USD)',min:10000,max:20000,step:100,def:15500,unit:''},
-    {k:'rdomestic',label:'Suku Bunga Domestik (IDR)',min:1,max:15,step:0.25,def:6,unit:'%'},
-    {k:'rforeign',label:'Suku Bunga Foreign (USD)',min:0,max:10,step:0.25,def:4.5,unit:'%'},
-    {k:'fwdmonths',label:'Forward Tenor',min:1,max:24,step:1,def:12,unit:' bln'}
+    {k:'ebitda2',label:'EBITDA',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'rentexpense',label:'Rent/Lease Expense',min:10,max:200,step:5,def:50,unit:'$M'}
   ],
   calc(v){
-    const t = v.fwdmonths/12;
-    const fwdRate = v.spotfx*Math.pow((1+v.rdomestic/100)/(1+v.rforeign/100), t);
-    const fwdPremium = (fwdRate/v.spotfx-1)*100;
-    const pts = sweep(1,24,23,m=>v.spotfx*Math.pow((1+v.rdomestic/100)/(1+v.rforeign/100),m/12));
+    const ebitdar = v.ebitda2+v.rentexpense;
+    const rentAsPctRevenue = v.rentexpense/ebitdar*100;
+    const pts = sweep(10,200,60,r=>v.ebitda2+r);
     return {
-      big:fmtNum(fwdRate,0),bigUnit:'',bigLabel:'Theoretical Forward Rate (IDR/USD)',
-      subs:[{l:'Forward Premium/Discount IDR',v:fmtNum(fwdPremium,2)+'%'},{l:'Diferensial Suku Bunga',v:fmtNum(v.rdomestic-v.rforeign,2)+'pp'},{l:'Tenor',v:v.fwdmonths+' bulan'}],
-      note:{type:'info', text:'Jika harga forward pasar menyimpang dari IRP, terbuka peluang covered interest arbitrage. Dalam praktik, IRP hampir selalu terpenuhi untuk mata uang yang fully convertible. Untuk IDR, NDF (Non-Deliverable Forward) adalah instrumen yang relevan.'},
-      chart:{xMin:1,xMax:24,yMin:Math.min(...pts.map(p=>p.y))*0.99,yMax:Math.max(...pts.map(p=>p.y))*1.01,vline:v.fwdmonths,series:[{label:'Forward Rate vs Tenor (bulan)',color:COLORS.cyan,pts}]}
-    };
-  }
-}
-]);
-
-/* ===================== BAB 10: LEASE & PENSION ACCOUNTING (4) ===================== */
-addF([
-{
-  id:'leasecapitalize',ch:10,year:2019,who:'IASB / FASB (IFRS 16 / ASC 842)',name:'Lease Capitalization — IFRS 16 / ASC 842',
-  desc:'Pasca implementasi IFRS 16 (2019), hampir SEMUA sewa operasi harus dicatat sebagai aset (Right-of-Use Asset) dan liabilitas di neraca. Ini mengubah rasio leverage dan coverage perusahaan dengan sewa besar (airlines, retailer).',
-  tex:'ROU_{Asset}=PV_{lease}=\\sum_{t=1}^{n}\\frac{\\text{Lease Payment}_t}{(1+i)^t}',
-  vars:[
-    {k:'annuallease',label:'Annual Lease Payment',min:10,max:500,step:5,def:100,unit:'$M'},
-    {k:'leaseyears',label:'Lease Term',min:1,max:20,step:1,def:8,unit:' thn'},
-    {k:'incrate',label:'Incremental Borrowing Rate',min:2,max:12,step:0.25,def:5,unit:'%'}
-  ],
-  calc(v){
-    let pvLease = 0;
-    for(let t=1;t<=v.leaseyears;t++){ pvLease += v.annuallease/Math.pow(1+v.incrate/100,t); }
-    const totalUndiscounted = v.annuallease*v.leaseyears;
-    const discountBenefit = totalUndiscounted-pvLease;
-    const impliedDebt = pvLease; // ROU Asset ≈ Lease Liability at inception
-    const pts = sweep(2,12,50,r=>{ let pv=0; for(let t=1;t<=v.leaseyears;t++){pv+=v.annuallease/Math.pow(1+r/100,t);} return pv; });
-    return {
-      big:fmtNum(pvLease,1),bigUnit:'$M',bigLabel:'Lease Liability (ROU Asset)',
-      subs:[{l:'Total Undiscounted Payments',v:'$'+fmtNum(totalUndiscounted,0)+'M'},{l:'PV Discount Benefit',v:'$'+fmtNum(discountBenefit,1)+'M'},{l:'Annual Payment',v:'$'+fmtNum(v.annuallease,1)+'M'},{l:'Implied Annual Interest (yr1)',v:'$'+fmtNum(pvLease*v.incrate/100,1)+'M'}],
-      note:{type:'warn', text:'Dampak IFRS 16: perusahaan dengan sewa besar (airlines, retailer dengan banyak gerai) akan terlihat LEBIH LEVERAGED setelah kapitalisasi. EBITDA akan NAIK (lease payment keluar dari EBITDA), tapi EBIT tetap karena masuk sebagai depresiasi+bunga. Analis harus adjust rasio leverage secara pro-forma.'},
-      chart:{xMin:2,xMax:12,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.incrate,series:[{label:'Lease Liability vs Borrowing Rate',color:COLORS.violet,pts}]}
+      big:fmtNum(ebitdar,1),bigUnit:'$M',bigLabel:'EBITDAR',
+      subs:[{l:'EBITDA (sebelum rent addback)',v:'$'+fmtNum(v.ebitda2,1)+'M'},{l:'Rent sebagai % EBITDAR',v:fmtNum(rentAsPctRevenue,1)+'%'}],
+      note:{type: rentAsPctRevenue>30?'warn':'info', text: rentAsPctRevenue>30?'Rent expense menyumbang porsi BESAR (>30%) dari EBITDAR: perusahaan ini sangat bergantung pada model sewa — bandingkan EV/EBITDAR (bukan EV/EBITDA) saat membandingkan dengan peer yang punya kebijakan beli-aset berbeda.':'EBITDAR paling berguna saat MEMBANDINGKAN dua perusahaan sejenis dengan strategi real estate berbeda — perusahaan yang BELI aset (capex tinggi, depresiasi tinggi) vs yang SEWA (rent expense tinggi, capex rendah) butuh metrik yang menormalisasi perbedaan struktural ini.'},
+      chart:{xMin:10,xMax:200,yMin:v.ebitda2,yMax:Math.max(...pts.map(p=>p.y))*1.05,vline:v.rentexpense,series:[{label:'EBITDAR vs Rent Expense',color:COLORS.amber,pts}]}
     };
   }
 },
 {
-  id:'pensionpbo',ch:10,year:1985,who:'FASB ASC 715 / IAS 19',name:'Pension Accounting — PBO & Funded Status',
-  desc:'Projected Benefit Obligation (PBO) adalah present value dari SEMUA benefit pensiun yang dijanjikan, memperhitungkan kenaikan gaji masa depan. Funded Status = Fair Value of Plan Assets − PBO. Defisit = liabilitas tersembunyi di neraca.',
-  tex:'\\text{Funded Status}=FV_{plan\\;assets}-PBO',
+  id:'pensionfunded',ch:8,year:1985,who:'FASB SFAS 87 (modern: ASC 715)',name:'Pension Funded Status',
+  desc:'Mengukur selisih antara aset yang dimiliki pension plan dan total OBLIGASI yang harus dibayarkan ke pensiunan masa depan (PBO) — funded status NEGATIF berarti perusahaan punya "liability tersembunyi" yang harus diisi lewat kontribusi kas masa depan.',
+  tex:'\\text{Funded Status}=\\text{Plan Assets}-\\text{Projected Benefit Obligation (PBO)}',
   vars:[
-    {k:'pbo',label:'Projected Benefit Obligation (PBO)',min:100,max:5000,step:50,def:1500,unit:'$M'},
-    {k:'planassets',label:'Fair Value of Plan Assets',min:50,max:5000,step:50,def:1200,unit:'$M'},
-    {k:'discountpbo',label:'Discount Rate (PBO)',min:2,max:8,step:0.25,def:4.5,unit:'%'},
-    {k:'expectedreturn',label:'Expected Return on Plan Assets',min:3,max:10,step:0.25,def:6.5,unit:'%'}
+    {k:'planassets',label:'Pension Plan Assets',min:200,max:2000,step:25,def:800,unit:'$M'},
+    {k:'pbo',label:'Projected Benefit Obligation (PBO)',min:200,max:2200,step:25,def:950,unit:'$M'}
   ],
   calc(v){
     const fundedStatus = v.planassets-v.pbo;
-    const fundingRatio = v.planassets/v.pbo*100;
-    const serviceInterest = v.pbo*v.discountpbo/100;
-    const expectedAssetReturn = v.planassets*v.expectedreturn/100;
-    const pts = sweep(50,5000,50,pa=>pa-v.pbo);
+    const fundedRatio = v.planassets/v.pbo*100;
+    const pts = sweep(200,2200,60,p=>v.planassets-p);
     return {
-      big:(fundedStatus>=0?'+':'')+fmtNum(fundedStatus,0),bigUnit:'$M',bigLabel:'Pension Funded Status',
-      subs:[{l:'Funding Ratio',v:fmtNum(fundingRatio,1)+'%'},{l:'PBO',v:'$'+fmtNum(v.pbo,0)+'M'},{l:'Plan Assets',v:'$'+fmtNum(v.planassets,0)+'M'},{l:'Interest Cost on PBO',v:'$'+fmtNum(serviceInterest,0)+'M/yr'}],
-      note:{type: fundingRatio<80?'danger':fundingRatio<100?'warn':'good', text: fundingRatio<80?'Funded status sangat defisit (<80%): perusahaan punya kewajiban pensiun yang JAUH melampaui aset dana pensiun — potensi large cash contributions wajib di masa depan yang bisa menguras free cash flow.':fundingRatio<100?'Pension underfunded: kewajiban melebihi aset — liabilitas ini sering tersembunyi di catatan kaki, tapi merupakan "utang nyata" yang harus diperhitungkan dalam analisis kredit.':'Pension fully/overfunded: posisi sehat — kecil kemungkinan perlu cash contribution besar dalam waktu dekat.'},
-      chart:{xMin:50,xMax:5000,yMin:Math.min(...pts.map(p=>p.y))-100,yMax:Math.max(...pts.map(p=>p.y))+100,vline:v.planassets,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Funded Status vs Plan Assets',color:COLORS.amber,pts}]}
+      big:(fundedStatus>=0?'+':'')+fmtNum(fundedStatus,1),bigUnit:'$M',bigLabel:'Pension Funded Status',
+      subs:[{l:'Funded Ratio',v:fmtNum(fundedRatio,1)+'%'},{l:'Status',v: fundedStatus>=0?'OVERFUNDED':'UNDERFUNDED'}],
+      note:{type: fundedRatio<80?'danger':fundedRatio<100?'warn':'good', text: fundedRatio<80?'Funded ratio sangat rendah (<80%): pension plan SANGAT underfunded — perusahaan kemungkinan harus melakukan kontribusi kas besar di masa depan, ini adalah liability ekonomis riil meski tidak selalu tampil penuh di balance sheet utama.':fundedRatio<100?'Plan underfunded (ratio<100%): defisit ini umumnya harus diisi melalui kontribusi kas tahunan — periksa apakah perusahaan punya kapasitas cash flow yang cukup tanpa mengganggu operasi inti.':'Plan OVERFUNDED: aset pension melebihi obligasi — situasi yang relatif jarang, sering hasil dari kinerja investasi pasar yang sangat baik atau perusahaan sudah membayar kontribusi ekstra di masa lalu.'},
+      chart:{xMin:200,xMax:2200,yMin:Math.min(...pts.map(p=>p.y))-50,yMax:Math.max(...pts.map(p=>p.y))+50,vline:v.pbo,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Funded Status vs PBO',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'pensionexpense',ch:8,year:1985,who:'FASB SFAS 87 (modern: ASC 715)',name:'Net Periodic Pension Expense',
+  desc:'Beban pensiun yang dicatat di income statement setiap periode — terdiri dari 3 komponen utama: biaya jasa tahun ini (service cost), biaya bunga atas obligasi (interest cost), DIKURANGI return yang diharapkan dari investasi aset pension.',
+  tex:'\\text{Pension Expense}=\\text{Service Cost}+\\text{Interest Cost}-\\text{Expected Return on Assets}',
+  vars:[
+    {k:'servicecost',label:'Service Cost',min:5,max:100,step:1,def:30,unit:'$M'},
+    {k:'interestcost2',label:'Interest Cost (on PBO)',min:5,max:100,step:1,def:25,unit:'$M'},
+    {k:'expectedreturn',label:'Expected Return on Plan Assets',min:0,max:120,step:1,def:35,unit:'$M'}
+  ],
+  calc(v){
+    const pensionExpense = v.servicecost+v.interestcost2-v.expectedreturn;
+    const pts = sweep(0,120,60,er=>v.servicecost+v.interestcost2-er);
+    return {
+      big:(pensionExpense>=0?'+':'')+fmtNum(pensionExpense,1),bigUnit:'$M',bigLabel:'Net Periodic Pension Expense',
+      subs:[{l:'Service Cost',v:'$'+fmtNum(v.servicecost,1)+'M'},{l:'Interest Cost',v:'$'+fmtNum(v.interestcost2,1)+'M'}],
+      note:{type: pensionExpense<0?'warn':'info', text: pensionExpense<0?'Pension Expense NEGATIF (pension INCOME): expected return on assets melebihi service+interest cost — ini akan MENAMBAH net income, tapi waspada karena ini hanya angka AKUNTANSI berdasarkan asumsi expected return, bukan cash flow aktual. Jika actual return jauh berbeda dari expected, akan ada "actuarial gain/loss" yang dicatat terpisah.':'Komponen expected return dihitung dari ASUMSI return jangka panjang (bukan return aktual tahun ini) — ini adalah salah satu area akuntansi yang paling rawan dimanipulasi: asumsi expected return yang terlalu optimis bisa mengecilkan pension expense secara artifisial.'},
+      chart:{xMin:0,xMax:120,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.expectedreturn,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Pension Expense vs Expected Return on Assets',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'leaseclassification',ch:8,year:2019,who:'FASB ASC 842 (90% PV Test)',name:'Finance vs Operating Lease Classification',
+  desc:'Salah satu dari 5 kriteria kunci untuk menentukan apakah sebuah lease diklasifikasikan sebagai FINANCE lease (mirip kepemilikan aset) atau OPERATING lease — jika PV pembayaran lease melebihi ~90% fair value aset, lease cenderung diklasifikasikan sebagai finance lease.',
+  tex:'\\text{PV Ratio}=\\frac{PV(\\text{Lease Payments})}{\\text{Fair Value of Underlying Asset}}',
+  vars:[
+    {k:'pvpayments',label:'PV of Lease Payments',min:50,max:1200,step:25,def:850,unit:'$M'},
+    {k:'fairvalueasset',label:'Fair Value Underlying Asset',min:100,max:1500,step:25,def:1000,unit:'$M'}
+  ],
+  calc(v){
+    const pvRatio = v.pvpayments/v.fairvalueasset*100;
+    const pts = sweep(100,1500,60,fv=>v.pvpayments/fv*100);
+    return {
+      big:fmtNum(pvRatio,2),bigUnit:'%',bigLabel:'PV Ratio (Lease Test)',
+      subs:[{l:'Threshold Indikatif',v:'90.00%'},{l:'Klasifikasi Indikatif',v: pvRatio>=90?'Finance Lease':'Operating Lease'}],
+      note:{type: pvRatio>=90?'warn':'info', text: pvRatio>=90?'PV Ratio ≥90%: lease ini secara substansi EKONOMIS mirip dengan kepemilikan aset (finance lease) — meski sejak ASC 842 perbedaan dampak balance sheet antara finance dan operating lease sudah jauh lebih kecil dibanding standar lama, klasifikasi ini masih mempengaruhi presentasi income statement (interest expense vs lease expense) dan cash flow statement.':'PV Ratio <90%: indikasi lease ini lebih condong ke OPERATING lease — tapi ingat, ini hanya SATU dari 5 kriteria ASC 842 (kriteria lain termasuk transfer ownership, purchase option, lease term vs economic life, dan specialized nature aset).'},
+      chart:{xMin:100,xMax:1500,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.fairvalueasset,hlines:[{y:90,color:COLORS.red,dash:true}],series:[{label:'PV Ratio vs Fair Value Asset',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'pensionsensitivity',ch:8,year:1990,who:'Praktik Actuarial Analysis',name:'Pension PBO Sensitivity to Discount Rate',
+  desc:'PBO (Projected Benefit Obligation) sangat sensitif terhadap asumsi discount rate — karena PBO adalah present value dari pembayaran pensiun masa depan yang sangat panjang (durasi tinggi), perubahan kecil pada discount rate menghasilkan perubahan BESAR pada nilai PBO.',
+  tex:'\\%\\Delta PBO \\approx -\\text{Duration}_{PBO}\\times \\Delta r',
+  vars:[
+    {k:'currentpbo',label:'PBO Saat Ini',min:200,max:2000,step:25,def:950,unit:'$M'},
+    {k:'pbodutation',label:'Estimasi Duration PBO',min:8,max:25,step:0.5,def:15,unit:' thn'},
+    {k:'ratechange',label:'Perubahan Discount Rate',min:-2,max:2,step:0.1,def:-0.5,unit:'%'}
+  ],
+  calc(v){
+    const pctChange = -v.pbodutation*v.ratechange/100*100;
+    const newPBO = v.currentpbo*(1+pctChange/100);
+    const dollarChange = newPBO-v.currentpbo;
+    const pts = sweep(-2,2,60,rc=>{
+      const pct = -v.pbodutation*rc/100*100;
+      return v.currentpbo*(1+pct/100)-v.currentpbo;
+    });
+    return {
+      big:(dollarChange>=0?'+':'')+fmtNum(dollarChange,1),bigUnit:'$M',bigLabel:'Δ PBO dari Perubahan Discount Rate',
+      subs:[{l:'PBO Baru (Estimasi)',v:'$'+fmtNum(newPBO,1)+'M'},{l:'% Perubahan',v:(pctChange>=0?'+':'')+fmtNum(pctChange,2)+'%'}],
+      note:{type: Math.abs(v.ratechange)>1?'warn':'info', text: 'Inilah mengapa penurunan suku bunga jangka panjang (seperti era 2010-2020) sangat MENYAKITKAN bagi perusahaan dengan pension plan defined-benefit besar — discount rate turun → PBO MELONJAK (present value obligasi naik) → funded status memburuk drastis, MESKI tidak ada perubahan apapun pada janji pensiun aktual ke karyawan. Durasi PBO yang panjang (15-20 tahun) membuat sensitivitas ini sangat besar, mirip dengan obligasi berdurasi panjang.'},
+      chart:{xMin:-2,xMax:2,yMin:Math.min(...pts.map(p=>p.y))-20,yMax:Math.max(...pts.map(p=>p.y))+20,vline:v.ratechange,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Δ PBO vs Δ Discount Rate',color:COLORS.violet,pts}]}
     };
   }
 }
 ]);
 
-/* ===================== BAB 11: ADVANCED CREDIT — MERTON MODEL (3) ===================== */
+/* ===================== BAB 9: INDEX METHODOLOGY & ADVANCED LIQUIDITY (5) ===================== */
 addF([
 {
-  id:'mertonmodel',ch:11,year:1974,who:'Robert Merton',name:'Merton Structural Credit Model',
-  desc:'Model Merton memandang ekuitas perusahaan sebagai CALL OPTION pada aset perusahaan dengan strike price = nilai nominal utang. Default terjadi jika nilai aset < nilai utang saat maturity. Memungkinkan derivasi "risk-neutral default probability".',
-  tex:'E=V_A\\cdot N(d_1)-D\\cdot e^{-rT}\\cdot N(d_2),\\quad d_2=\\frac{\\ln(V_A/D)+(r-\\sigma_A^2/2)T}{\\sigma_A\\sqrt{T}}',
+  id:'freefloatweight',ch:9,year:2000,who:'S&P, MSCI, FTSE (metodologi modern)',name:'Free-Float Adjusted Market Cap Weighting',
+  desc:'Metodologi standar index modern (S&P 500, MSCI) — bobot saham di index dihitung dari market cap yang HANYA memperhitungkan saham yang benar-benar free float (bisa diperdagangkan publik), bukan total shares outstanding.',
+  tex:'w_i=\\frac{P_i\\times \\text{Shares}_i\\times \\text{FreeFloat}_i}{\\sum_j P_j\\times \\text{Shares}_j\\times \\text{FreeFloat}_j}',
   vars:[
-    {k:'assetval',label:'Asset Value (Vₐ)',min:100,max:3000,step:25,def:800,unit:'$M'},
-    {k:'debtface',label:'Face Value of Debt (D)',min:50,max:2500,step:25,def:500,unit:'$M'},
-    {k:'assetsvol',label:'Asset Volatility (σₐ)',min:5,max:60,step:1,def:20,unit:'%'},
-    {k:'rfmerton',label:'Risk-Free Rate',min:1,max:8,step:0.25,def:4,unit:'%'},
-    {k:'debtmaturity',label:'Debt Maturity',min:1,max:10,step:0.5,def:3,unit:' thn'}
+    {k:'stockprice',label:'Harga Saham Target',min:5,max:300,step:1,def:80,unit:'$'},
+    {k:'sharesout3',label:'Shares Outstanding',min:10,max:500,step:5,def:100,unit:'M'},
+    {k:'freefloatpct2',label:'Free Float %',min:10,max:100,step:1,def:90,unit:'%'},
+    {k:'restofindexmcap',label:'Total Free-Float Mcap Sisa Index',min:500,max:10000,step:100,def:3000,unit:'$M'}
   ],
   calc(v){
-    const d1=(Math.log(v.assetval/v.debtface)+(v.rfmerton/100+Math.pow(v.assetsvol/100,2)/2)*v.debtmaturity)/(v.assetsvol/100*Math.sqrt(v.debtmaturity));
-    const d2=d1-(v.assetsvol/100)*Math.sqrt(v.debtmaturity);
-    const equityValue=v.assetval*ncdf(d1)-v.debtface*Math.exp(-v.rfmerton/100*v.debtmaturity)*ncdf(d2);
-    const defaultProb=(1-ncdf(d2))*100;
-    const distanceToDefault=d2;
-    const impliedSpread=Math.max(0,(-Math.log(ncdf(d2)+ncdf(-d2)*0.4)/v.debtmaturity-v.rfmerton/100)*10000);
-    const pts=sweep(5,60,50,sv=>{const dd1=(Math.log(v.assetval/v.debtface)+(v.rfmerton/100+Math.pow(sv/100,2)/2)*v.debtmaturity)/(sv/100*Math.sqrt(v.debtmaturity)); const dd2=dd1-(sv/100)*Math.sqrt(v.debtmaturity); return (1-ncdf(dd2))*100;});
+    const ffMcap = v.stockprice*v.sharesout3*(v.freefloatpct2/100);
+    const totalIndexMcap = ffMcap+v.restofindexmcap;
+    const weight = ffMcap/totalIndexMcap*100;
+    const pts = sweep(10,100,60,ff=>{
+      const m = v.stockprice*v.sharesout3*(ff/100);
+      return m/(m+v.restofindexmcap)*100;
+    });
     return {
-      big:fmtNum(defaultProb,2),bigUnit:'%',bigLabel:'Risk-Neutral Default Probability',
-      subs:[{l:'Equity Value (Merton)',v:'$'+fmtNum(equityValue,1)+'M'},{l:'Distance-to-Default (d₂)',v:fmtNum(distanceToDefault,2)+' σ'},{l:'Implied Credit Spread',v:fmtNum(impliedSpread,0)+' bps'},{l:'Leverage Ratio (D/Vₐ)',v:fmtNum(v.debtface/v.assetval*100,1)+'%'}],
-      note:{type: defaultProb>15?'danger':defaultProb>5?'warn':'good', text: defaultProb>15?'Default probability tinggi (>15%): perusahaan dalam territory distress berdasarkan model Merton — combined leverage + volatility aset menghasilkan jarak ke default yang sangat kecil.':defaultProb>5?'Default probability moderat (5-15%): elevated credit risk. Merton model paling akurat untuk perusahaan publik dengan utang yang jelas maturity-nya.':'Default probability rendah: aset perusahaan punya cushion besar di atas nilai utang — consistent dengan investment grade credit profile.'},
-      chart:{xMin:5,xMax:60,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.assetsvol,series:[{label:'Default Probability vs Asset Volatility',color:COLORS.red,pts}]}
+      big:fmtNum(weight,3),bigUnit:'%',bigLabel:'Bobot di Index',
+      subs:[{l:'Free-Float Market Cap',v:'$'+fmtNum(ffMcap,1)+'M'},{l:'Total Shares Outstanding',v:fmtNum(v.sharesout3,0)+'M'}],
+      note:{type: v.freefloatpct2<50?'warn':'info', text: v.freefloatpct2<50?'Free float rendah (<50%): jika saham ini dipertimbangkan masuk index mayor, bobotnya akan JAUH lebih kecil dari yang diimplikasikan total market cap-nya — index provider biasanya juga punya threshold minimum free float untuk syarat inklusi.':'Free-float weighting mencegah saham dengan kepemilikan insider/pemerintah besar mendominasi index secara tidak proporsional terhadap saham yang BENAR-BENAR bisa diperdagangkan investor publik.'},
+      chart:{xMin:10,xMax:100,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.freefloatpct2,series:[{label:'Bobot Index vs Free Float %',color:COLORS.cyan,pts}]}
     };
   }
 },
 {
-  id:'cdspricing',ch:11,year:2000,who:'JP Morgan (CDS Market)',name:'Credit Default Swap — CDS Spread Basics',
-  desc:'CDS adalah instrumen derivatif kredit — pembeli membayar "premi" periodik (spread dalam bps), penjual memberikan proteksi jika terjadi credit event (default). CDS spread mencerminkan persepsi pasar atas probabilitas default.',
-  tex:'\\text{CDS Spread}\\approx(1-\\text{Recovery Rate})\\times\\text{Annual Default Probability}',
+  id:'indexdivisor',ch:9,year:1896,who:'Charles Dow (Dow Jones methodology)',name:'Price-Weighted Index Divisor Adjustment',
+  desc:'Indeks price-weighted klasik (seperti Dow Jones Industrial Average) memakai "divisor" khusus yang terus disesuaikan setiap kali ada stock split atau perubahan komponen — supaya nilai index TETAP KONTINU dan tidak "melompat" akibat aksi korporat yang sebenarnya tidak mengubah nilai ekonomis perusahaan.',
+  tex:'\\text{Divisor}_{baru}=\\frac{\\sum P_{baru}}{\\text{Index Value Sebelumnya}}',
   vars:[
-    {k:'annualdefprob',label:'Annual Default Probability',min:0.1,max:20,step:0.1,def:1.5,unit:'%'},
-    {k:'recoveryrate',label:'Recovery Rate',min:0,max:80,step:5,def:40,unit:'%'},
-    {k:'cdstennor',label:'CDS Tenor',min:1,max:10,step:1,def:5,unit:' thn'}
+    {k:'sumpricesbefore',label:'Sum Harga Saham (Sebelum Split)',min:100,max:1000,step:10,def:350,unit:'$'},
+    {k:'olddivisor',label:'Divisor Lama',min:1,max:10,step:0.1,def:3,unit:''},
+    {k:'sumpricesafter',label:'Sum Harga Saham (Setelah Split)',min:50,max:1000,step:10,def:300,unit:'$'}
   ],
   calc(v){
-    const lgd = 1-v.recoveryrate/100;
-    const annualSpreadBps = v.annualdefprob/100*lgd*10000;
-    const survivalProb = Math.pow(1-v.annualdefprob/100, v.cdstennor)*100;
-    const cumDefaultProb = (1-Math.pow(1-v.annualdefprob/100, v.cdstennor))*100;
-    const pts = sweep(0.1,20,50,dp=>dp/100*(1-v.recoveryrate/100)*10000);
+    const indexValueBefore = v.sumpricesbefore/v.olddivisor;
+    const newDivisor = v.sumpricesafter/indexValueBefore;
+    const pts = sweep(50,1000,60,sp=>sp/indexValueBefore);
     return {
-      big:fmtNum(annualSpreadBps,0),bigUnit:' bps',bigLabel:'Implied CDS Spread',
-      subs:[{l:'Loss Given Default (LGD)',v:fmtNum(lgd*100,0)+'%'},{l:'Cum. Default Prob ('+v.cdstennor+' yr)',v:fmtNum(cumDefaultProb,2)+'%'},{l:'Survival Probability',v:fmtNum(survivalProb,2)+'%'}],
-      note:{type: annualSpreadBps>500?'danger':annualSpreadBps>200?'warn':'good', text: annualSpreadBps>500?'CDS spread >500 bps: territory high-yield/distressed debt — pasar pricing in risiko default yang substantial. Pada level ini, restrukturisasi atau default lebih mungkin dalam 5 tahun.':annualSpreadBps>200?'CDS spread 200-500 bps: high-yield / speculative grade — signifikan credit risk premium diatas risk-free. Tipikal untuk B-rated corporate.':'CDS spread rendah (<200 bps): investment grade profile — pasar memandang risiko default relatif kecil.'},
-      chart:{xMin:0.1,xMax:20,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.annualdefprob,hlines:[{y:200,color:COLORS.faint,dash:true},{y:500,color:COLORS.red,dash:true}],series:[{label:'CDS Spread (bps) vs Annual Default Prob',color:COLORS.violet,pts}]}
+      big:fmtNum(newDivisor,4),bigUnit:'',bigLabel:'Divisor Baru (Setelah Penyesuaian)',
+      subs:[{l:'Index Value (harus tetap sama)',v:fmtNum(indexValueBefore,2)},{l:'Divisor Lama',v:fmtNum(v.olddivisor,4)}],
+      note:{type:'info', text: 'Inilah kenapa Dow Jones Divisor adalah angka aneh seperti 0.1517 (bukan angka bulat) — setiap stock split, spin-off, atau pergantian komponen index sejak 1896 terus menyesuaikan divisor ini, supaya index value tetap kontinu secara historis tanpa "lompatan" artifisial yang tidak mencerminkan perubahan nilai ekonomis riil.'},
+      chart:{xMin:50,xMax:1000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.sumpricesafter,series:[{label:'Index Value vs Sum Harga Saham',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'ocfratio',ch:9,year:1990,who:'Praktik Analisis Cash Flow',name:'Operating Cash Flow Ratio',
+  desc:'Mengukur kemampuan perusahaan menutupi liabilitas jangka pendek menggunakan CASH FLOW OPERASIONAL AKTUAL — lebih ketat dan sulit dimanipulasi dibanding Current Ratio (yang memakai angka akuntansi accrual seperti receivables/inventory).',
+  tex:'\\text{OCF Ratio}=\\frac{\\text{Operating Cash Flow}}{\\text{Current Liabilities}}',
+  vars:[
+    {k:'ocf2',label:'Operating Cash Flow',min:20,max:500,step:10,def:150,unit:'$M'},
+    {k:'currentliab2',label:'Current Liabilities',min:20,max:400,step:10,def:120,unit:'$M'}
+  ],
+  calc(v){
+    const ocfRatio = v.ocf2/v.currentliab2;
+    const pts = sweep(20,400,60,cl=>v.ocf2/cl);
+    return {
+      big:fmtNum(ocfRatio,2),bigUnit:'x',bigLabel:'Operating Cash Flow Ratio',
+      subs:[{l:'Operating Cash Flow',v:'$'+fmtNum(v.ocf2,1)+'M'},{l:'Current Liabilities',v:'$'+fmtNum(v.currentliab2,1)+'M'}],
+      note:{type: ocfRatio<1?'danger':ocfRatio<1.5?'warn':'good', text: ocfRatio<1?'OCF Ratio <1: cash flow operasional AKTUAL tidak cukup menutupi liabilitas jangka pendek — sinyal yang LEBIH SERIUS dibanding Current Ratio rendah, karena ini memakai cash riil bukan estimasi accrual.':ocfRatio<1.5?'OCF Ratio moderat: perusahaan masih bisa menutupi obligasi jangka pendek dari cash flow operasional, tapi buffer terbatas.':'OCF Ratio sehat — perusahaan menghasilkan cash flow operasional yang kuat relatif terhadap obligasi jangka pendeknya, indikator likuiditas yang lebih robust dibanding rasio berbasis accrual.'},
+      chart:{xMin:20,xMax:400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.currentliab2,hlines:[{y:1,color:COLORS.red,dash:true}],series:[{label:'OCF Ratio vs Current Liabilities',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'defensiveinterval',ch:9,year:1980,who:'Praktik Analisis Likuiditas Konservatif',name:'Defensive Interval Ratio (DIR)',
+  desc:'Mengukur berapa HARI perusahaan bisa terus beroperasi menggunakan HANYA aset paling likuid (cash, marketable securities, receivables) tanpa perlu sumber pendanaan tambahan — metrik "survival" paling konservatif dalam toolkit analisis likuiditas.',
+  tex:'DIR=\\frac{\\text{Cash}+\\text{Marketable Securities}+\\text{Receivables}}{\\text{Daily Operating Expenses}}',
+  vars:[
+    {k:'cash4',label:'Cash',min:10,max:200,step:5,def:50,unit:'$M'},
+    {k:'receivables2',label:'Receivables',min:10,max:300,step:5,def:80,unit:'$M'},
+    {k:'marketablesec',label:'Marketable Securities',min:0,max:150,step:5,def:30,unit:'$M'},
+    {k:'dailyopex',label:'Daily Operating Expenses',min:1,max:30,step:0.5,def:8,unit:'$M'}
+  ],
+  calc(v){
+    const liquidAssets = v.cash4+v.receivables2+v.marketablesec;
+    const dir = liquidAssets/v.dailyopex;
+    const pts = sweep(1,30,60,de=>liquidAssets/de);
+    return {
+      big:fmtNum(dir,1),bigUnit:' hari',bigLabel:'Defensive Interval Ratio',
+      subs:[{l:'Total Liquid Assets',v:'$'+fmtNum(liquidAssets,1)+'M'},{l:'Daily Opex',v:'$'+fmtNum(v.dailyopex,2)+'M'}],
+      note:{type: dir<30?'danger':dir<90?'warn':'good', text: dir<30?'DIR <30 hari: perusahaan punya buffer SANGAT TIPIS — jika revenue terhenti total (skenario stres ekstrem), perusahaan kehabisan aset likuid dalam kurang dari sebulan operasi.':dir<90?'DIR moderat (30-90 hari): buffer likuiditas cukup untuk shock jangka pendek, tapi tidak besar untuk periode stres berkepanjangan.':'DIR sehat (>90 hari): perusahaan punya cadangan likuiditas signifikan untuk bertahan dalam skenario stres operasional yang ekstrem dan berkepanjangan.'},
+      chart:{xMin:1,xMax:30,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.dailyopex,hlines:[{y:30,color:COLORS.red,dash:true},{y:90,color:COLORS.green,dash:true}],series:[{label:'DIR vs Daily Operating Expenses',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'cashratio',ch:9,year:1900,who:'Praktik Analisis Likuiditas Klasik',name:'Cash Ratio',
+  desc:'Metrik likuiditas PALING KONSERVATIF — hanya memperhitungkan cash dan setara kas (TANPA receivables, TANPA inventory) dibanding current liabilities. Mengukur kemampuan membayar utang jangka pendek SEKETIKA, tanpa perlu menunggu collection atau menjual aset apapun.',
+  tex:'\\text{Cash Ratio}=\\frac{\\text{Cash}+\\text{Marketable Securities}}{\\text{Current Liabilities}}',
+  vars:[
+    {k:'cash5',label:'Cash & Equivalents',min:10,max:300,step:5,def:80,unit:'$M'},
+    {k:'marketablesec2',label:'Marketable Securities',min:0,max:150,step:5,def:40,unit:'$M'},
+    {k:'currentliab4',label:'Current Liabilities',min:20,max:400,step:10,def:150,unit:'$M'}
+  ],
+  calc(v){
+    const cashRatio = (v.cash5+v.marketablesec2)/v.currentliab4;
+    const pts = sweep(20,400,60,cl=>(v.cash5+v.marketablesec2)/cl);
+    return {
+      big:fmtNum(cashRatio,2),bigUnit:'x',bigLabel:'Cash Ratio',
+      subs:[{l:'Cash + Marketable Sec.',v:'$'+fmtNum(v.cash5+v.marketablesec2,1)+'M'},{l:'Current Liabilities',v:'$'+fmtNum(v.currentliab4,1)+'M'}],
+      note:{type: cashRatio<0.2?'warn':cashRatio>1?'info':'good', text: cashRatio<0.2?'Cash Ratio sangat rendah (<0.2x): perusahaan bergantung penuh pada collection receivables atau penjualan inventory untuk memenuhi obligasi jangka pendek — wajar untuk banyak bisnis, tapi rentan terhadap shock likuiditas mendadak.':cashRatio>1?'Cash Ratio >1x: perusahaan bisa melunasi SELURUH current liabilities hanya dari cash, tanpa perlu collection apapun — sangat konservatif, mungkin mengindikasikan cash yang "menganggur" tidak produktif jika berlebihan.':'Cash Ratio berada di rentang yang umum — kombinasikan dengan Current Ratio dan Quick Ratio (Bab 1) untuk gambaran likuiditas yang lebih lengkap dari berbagai tingkat konservatisme.'},
+      chart:{xMin:20,xMax:400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.currentliab4,series:[{label:'Cash Ratio vs Current Liabilities',color:COLORS.cyan,pts}]}
     };
   }
 }
 ]);
 
-/* ===================== BAB 12: INDEX & MARKET MICROSTRUCTURE (3) ===================== */
-addF([
-{
-  id:'indexweight',ch:12,year:1957,who:'Standard & Poors (S&P 500 methodology)',name:'Index Weighting Methodologies',
-  desc:'Ada 3 metodologi utama: (1) Market Cap Weighted — bobot proporsional market cap float; (2) Price Weighted (seperti DJIA) — bobot proporsional harga saham; (3) Equal Weight — semua konstituen bobot sama. Masing-masing punya bias yang berbeda.',
-  tex:'w_i^{MCW}=\\frac{\\text{Float}_i\\times P_i}{\\sum_j \\text{Float}_j\\times P_j},\\quad w_i^{PW}=\\frac{P_i}{\\sum_j P_j},\\quad w_i^{EW}=\\frac{1}{N}',
-  vars:[
-    {k:'stockA_price',label:'Harga Saham A',min:5,max:500,step:5,def:100,unit:'$'},
-    {k:'stockA_float',label:'Float Shares A',min:10,max:1000,step:10,def:200,unit:'M'},
-    {k:'stockB_price',label:'Harga Saham B',min:5,max:500,step:5,def:50,unit:'$'},
-    {k:'stockB_float',label:'Float Shares B',min:10,max:1000,step:10,def:400,unit:'M'},
-    {k:'stockC_price',label:'Harga Saham C',min:5,max:500,step:5,def:20,unit:'$'},
-    {k:'stockC_float',label:'Float Shares C',min:10,max:1000,step:10,def:600,unit:'M'}
-  ],
-  calc(v){
-    const mcA=v.stockA_price*v.stockA_float, mcB=v.stockB_price*v.stockB_float, mcC=v.stockC_price*v.stockC_float;
-    const totalMC=mcA+mcB+mcC;
-    const totalPrice=v.stockA_price+v.stockB_price+v.stockC_price;
-    const wMCW_A=mcA/totalMC*100, wMCW_B=mcB/totalMC*100, wMCW_C=mcC/totalMC*100;
-    const wPW_A=v.stockA_price/totalPrice*100, wPW_B=v.stockB_price/totalPrice*100;
-    const bars=[
-      {label:'A (MCW)',value:wMCW_A,color:COLORS.amber},
-      {label:'B (MCW)',value:wMCW_B,color:COLORS.amber},
-      {label:'C (MCW)',value:wMCW_C,color:COLORS.amber},
-      {label:'A (Price)',value:wPW_A,color:COLORS.cyan},
-      {label:'B (Price)',value:wPW_B,color:COLORS.cyan},
-      {label:'C (Price)',value:v.stockC_price/totalPrice*100,color:COLORS.cyan},
-      {label:'A/B/C (EW)',value:33.3,color:COLORS.green},{label:'',value:33.3,color:COLORS.green},{label:'',value:33.3,color:COLORS.green}
-    ];
-    return {
-      big:fmtNum(wMCW_A,1),bigUnit:'%',bigLabel:'Bobot Saham A (Market Cap Weight)',
-      subs:[{l:'MCW: A / B / C',v:fmtNum(wMCW_A,1)+'% / '+fmtNum(wMCW_B,1)+'% / '+fmtNum(wMCW_C,1)+'%'},{l:'Price Weight: A / B / C',v:fmtNum(wPW_A,1)+'% / '+fmtNum(wPW_B,1)+'% / '+fmtNum(v.stockC_price/totalPrice*100,1)+'%'},{l:'Equal Weight: all',v:'33.3% each'},{l:'Total Float Mkt Cap',v:'$'+fmtNum(totalMC,0)+'M'}],
-      note:{type:'info', text:'Market Cap Weighting (seperti S&P 500, IHSG) memberikan bobot lebih ke perusahaan besar — momentum bias. Price Weighting (DJIA) memberikan bobot lebih ke saham harga tinggi tanpa melihat market cap. Equal Weight memberikan exposure lebih merata tapi butuh rebalancing reguler dan lebih mendukung small-cap.'},
-      chart:{mode:'bars',bars,yMin:0,yMax:55}
-    };
-  }
-},
-{
-  id:'bidaskspread',ch:12,year:1960,who:'Market Microstructure Theory',name:'Bid-Ask Spread & Market Impact',
-  desc:'Bid-ask spread adalah biaya transaksi implisit dan ukuran likuiditas pasar. Spread terdiri dari: adverse selection cost (info asymmetry), inventory cost (market maker), dan order processing cost. Illiquid stock punya spread besar.',
-  tex:'\\text{Effective Spread}=2\\times|P_{trade}-M|,\\quad \\text{Relative Spread}=\\frac{Ask-Bid}{\\text{Midpoint}}',
-  vars:[
-    {k:'bidprice',label:'Bid Price',min:1,max:200,step:0.5,def:49.8,unit:'$'},
-    {k:'askprice',label:'Ask Price',min:1,max:200,step:0.5,def:50.2,unit:'$'},
-    {k:'adv',label:'Average Daily Volume (ADV)',min:100,max:50000,step:100,def:5000,unit:'K shares'},
-    {k:'tradesize',label:'Trade Size',min:1,max:5000,step:10,def:200,unit:'K shares'}
-  ],
-  calc(v){
-    const midpoint = (v.bidprice+v.askprice)/2;
-    const absSpread = v.askprice-v.bidprice;
-    const relSpread = absSpread/midpoint*100;
-    const mktImpactPct = Math.pow(v.tradesize/v.adv, 0.6)*relSpread*5; // simplified market impact model
-    const totalCost = (relSpread/2+mktImpactPct)*v.tradesize*1000*midpoint/100;
-    const pts = sweep(100,50000,50,adv=>Math.pow(v.tradesize/adv,0.6)*relSpread*5);
-    return {
-      big:fmtNum(relSpread,3),bigUnit:'%',bigLabel:'Relative Bid-Ask Spread',
-      subs:[{l:'Absolute Spread',v:'$'+fmtNum(absSpread,2)},{l:'Midpoint',v:'$'+fmtNum(midpoint,2)},{l:'Est. Market Impact',v:fmtNum(mktImpactPct,3)+'%'},{l:'Est. Total Transaction Cost',v:'$'+fmtNum(totalCost,0)}],
-      note:{type: relSpread>0.5?'warn':relSpread<0.05?'good':'info', text: relSpread>0.5?'Spread relatif tinggi (>0.5%): saham kurang likuid — biaya round-trip trading bisa significant. Untuk institutional trader, market impact bisa jauh lebih besar dari spread itu sendiri.':relSpread<0.05?'Spread sangat ketat (<0.05%): saham sangat likuid, biasanya large-cap blue chip dengan market maker aktif.':'Spread dalam rentang normal untuk saham mid-cap.'},
-      chart:{xMin:100,xMax:50000,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.2,vline:v.adv,series:[{label:'Est. Market Impact % vs ADV (K shares)',color:COLORS.red,pts}]}
-    };
-  }
-}
-]);
-
-/* ===================== BAB 13: ADVANCED VALUATION TECHNIQUES (6) ===================== */
-addF([
-{
-  id:'ddmh',ch:13,year:1956,who:'Myron Gordon / Damodaran Extension',name:'DDM — Three-Stage Model',
-  desc:'Perluasan realistis DDM untuk perusahaan yang melewati tiga fase: growth tinggi → transisi → stabil. Mengakui bahwa tidak ada perusahaan yang tumbuh selamanya pada rate tinggi.',
-  tex:'P_0=\\sum_{t=1}^{n_1}\\frac{D_t}{(1+r)^t}+\\sum_{t=n_1+1}^{n_2}\\frac{D_t}{(1+r)^t}+\\frac{P_{terminal}}{(1+r)^{n_2}}',
-  vars:[
-    {k:'d0',label:'Dividen Saat Ini (D₀)',min:0.2,max:10,step:0.1,def:1.5,unit:'$'},
-    {k:'g1',label:'Growth Tahap 1 (5 thn)',min:5,max:30,step:0.5,def:18,unit:'%'},
-    {k:'g2',label:'Growth Transisi Thn 6-10',min:3,max:20,step:0.5,def:10,unit:'%'},
-    {k:'g3',label:'Growth Stabil (terminal)',min:1,max:6,step:0.25,def:3.5,unit:'%'},
-    {k:'req',label:'Required Return (r)',min:7,max:20,step:0.25,def:12,unit:'%'}
-  ],
-  calc(v){
-    if(v.req<=v.g3/100+0.001) v.req=v.g3/100*100+2;
-    let price=0, d=v.d0;
-    for(let t=1;t<=5;t++){ d*=(1+v.g1/100); price+=d/Math.pow(1+v.req/100,t); }
-    for(let t=6;t<=10;t++){ d*=(1+v.g2/100); price+=d/Math.pow(1+v.req/100,t); }
-    const dTerminal=d*(1+v.g3/100);
-    const terminal=dTerminal/((v.req-v.g3)/100);
-    const pvTerminal=terminal/Math.pow(1+v.req/100,10);
-    price+=pvTerminal;
-    const pts=sweep(7,20,55,r=>{
-      if(r<=v.g3+0.5) return null;
-      let p=0, dd=v.d0;
-      for(let t=1;t<=5;t++){ dd*=(1+v.g1/100); p+=dd/Math.pow(1+r/100,t); }
-      for(let t=6;t<=10;t++){ dd*=(1+v.g2/100); p+=dd/Math.pow(1+r/100,t); }
-      const dt=dd*(1+v.g3/100); const tv=dt/((r-v.g3)/100);
-      return p+tv/Math.pow(1+r/100,10);
-    }).filter(p=>p.y!==null && p.y<2000 && p.y>0);
-    return {
-      big:fmtNum(price,2),bigUnit:'$/share',bigLabel:'Intrinsic Value (3-Stage DDM)',
-      subs:[{l:'PV Phase 1 (yr 1-5)',v:'$'+fmtNum(price-pvTerminal-(() => { let p=0,dd=v.d0; for(let t=1;t<=5;t++){dd*=(1+v.g1/100);p+=dd/Math.pow(1+v.req/100,t);} for(let t=6;t<=10;t++){dd*=(1+v.g2/100);p+=dd/Math.pow(1+v.req/100,t);} return price-pvTerminal; })(),2)+'M est.'},{l:'PV Terminal Value',v:'$'+fmtNum(pvTerminal,2)},{l:'Terminal % dari Nilai Total',v:fmtNum(pvTerminal/price*100,1)+'%'}],
-      note:{type: pvTerminal/price>0.8?'warn':v.g1>20?'info':'good', text: pvTerminal/price>0.8?'Lebih dari 80% nilai berasal dari terminal value — sangat sensitif terhadap asumsi growth jangka panjang dan required return. Uji sensitivitas sangat dianjurkan.':v.g1>20?'Growth fase 1 yang sangat tinggi ('+v.g1+'%) membuat perbedaan besar antara skenario bull dan bear — pastikan angka ini defensible secara fundamental.':'Distribusi nilai antara tiga fase cukup berimbang — model ini lebih robust terhadap perubahan asumsi tunggal.'},
-      chart:{xMin:7,xMax:20,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.req,series:[{label:'Intrinsic Value vs Required Return',color:COLORS.amber,pts}]}
-    };
-  }
-},
-{
-  id:'reversedcf',ch:13,year:2000,who:'Damodaran (Reverse DCF)',name:'Reverse DCF — Implied Growth',
-  desc:'Daripada memproyeksikan growth lalu menghitung harga wajar, Reverse DCF bertanya: "Growth rate berapa yang sudah IMPLISIT dalam harga pasar saat ini?" — alat deteksi ekspektasi berlebihan.',
-  tex:'P_{market}=\\frac{FCF_0\\cdot(1+g)}{WACC-g}\\Rightarrow g^*=\\frac{P\\cdot WACC-FCF_0}{P+FCF_0}',
-  vars:[
-    {k:'marketprice2',label:'Harga Pasar Saat Ini ($)',min:10,max:1000,step:1,def:200,unit:'$'},
-    {k:'sharesout2',label:'Shares Outstanding',min:1,max:500,step:1,def:50,unit:'M'},
-    {k:'fcf0',label:'Free Cash Flow Terkini (Annualized)',min:10,max:5000,step:10,def:300,unit:'$M'},
-    {k:'waccrev',label:'WACC',min:5,max:18,step:0.25,def:9,unit:'%'},
-    {k:'termgrowth2',label:'Terminal Growth (perpetuity)',min:1,max:5,step:0.25,def:3,unit:'%'}
-  ],
-  calc(v){
-    const mktcap=v.marketprice2*v.sharesout2;
-    const w=v.waccrev/100, tg=v.termgrowth2/100;
-    // Gordon Growth: P = FCF*(1+g)/(WACC-g) → solve g
-    // mktcap*(WACC-g) = FCF*(1+g)
-    // mktcap*WACC - mktcap*g = FCF + FCF*g
-    // mktcap*WACC - FCF = g*(mktcap + FCF)
-    const impliedG = Math.min((mktcap*w - v.fcf0)/(mktcap + v.fcf0)*100, v.waccrev-0.5);
-    const fairAtTg = v.fcf0*(1+tg)/(w-tg);
-    const fairPerShare = fairAtTg/v.sharesout2;
-    const premiumToFair = (v.marketprice2/fairPerShare-1)*100;
-    const pts = sweep(5,18,55,wacc=>{ const ww=wacc/100; return Math.min((mktcap*ww-v.fcf0)/(mktcap+v.fcf0)*100, wacc-0.5); });
-    return {
-      big:fmtNum(impliedG,2),bigUnit:'%',bigLabel:'Implied Growth Rate dalam Harga Pasar',
-      subs:[{l:'Market Cap',v:'$'+fmtNum(mktcap,0)+'M'},{l:'Fair Value @ Terminal Growth',v:'$'+fmtNum(fairPerShare,2)+'/share'},{l:'Premium vs Terminal Growth',v:(premiumToFair>=0?'+':'')+fmtNum(premiumToFair,1)+'%'}],
-      note:{type: impliedG>15?'danger':impliedG>10?'warn':'good', text: impliedG>15?'Harga pasar meng-imply growth '+fmtNum(impliedG,1)+'%/thn secara perpetuity — ekspektasi yang SANGAT agresif dan hampir mustahil dipertahankan jangka panjang. Pasar mungkin overvalued.':impliedG>10?'Implied growth '+fmtNum(impliedG,1)+'%: ambisius tapi mungkin untuk perusahaan berkualitas tinggi — pertanyaannya apakah fundamental perusahaan justifies ekspektasi ini.':'Implied growth '+fmtNum(impliedG,1)+'%: reasonable. Harga saat ini tidak mengandung ekspektasi growth yang berlebihan.'},
-      chart:{xMin:5,xMax:18,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.2,vline:v.waccrev,hlines:[{y:v.termgrowth2,color:COLORS.green,dash:true}],series:[{label:'Implied Growth % vs WACC',color:COLORS.violet,pts}]}
-    };
-  }
-},
-{
-  id:'apv',ch:13,year:1974,who:'Stewart Myers (APV)',name:'Adjusted Present Value (APV)',
-  desc:'APV memisahkan nilai perusahaan menjadi dua komponen: nilai jika 100% equity (unlevered) + PV tax shield dari utang. Lebih akurat dari WACC untuk struktur modal yang berubah-ubah (LBO, proyek infrastruktur).',
-  tex:'APV = V_U + PV(TaxShield) - PV(Distress\\ Cost)',
-  vars:[
-    {k:'fcff_apv',label:'NOPAT / FCFF Tahunan',min:20,max:500,step:5,def:100,unit:'$M'},
-    {k:'ku',label:'Unlevered Cost of Capital (kᵤ)',min:6,max:18,step:0.25,def:11,unit:'%'},
-    {k:'debt_apv',label:'Total Debt',min:0,max:3000,step:25,def:400,unit:'$M'},
-    {k:'kd_apv',label:'Cost of Debt (kd)',min:2,max:12,step:0.25,def:5.5,unit:'%'},
-    {k:'tax_apv',label:'Tax Rate',min:10,max:40,step:1,def:25,unit:'%'},
-    {k:'distressprob',label:'Distress Probability (est.)',min:0,max:20,step:0.5,def:3,unit:'%'}
-  ],
-  calc(v){
-    const vu = v.fcff_apv/(v.ku/100); // perpetuity
-    const annualShield = v.debt_apv*(v.kd_apv/100)*(v.tax_apv/100);
-    const pvShield = annualShield/(v.kd_apv/100); // discounted at kd (risky tax shield)
-    const distressCost = v.debt_apv*0.3; // est. 30% of debt value as distress cost
-    const pvDistress = distressCost*(v.distressprob/100)/(v.ku/100);
-    const apv = vu + pvShield - pvDistress;
-    const equity = apv - v.debt_apv;
-    const pts = sweep(0,3000,55,d=>{ const sh=d*(v.kd_apv/100)*(v.tax_apv/100)/(v.kd_apv/100); const dc=d*0.3*(v.distressprob/100)/(v.ku/100); return vu+sh-dc; });
-    return {
-      big:fmtNum(apv,1),bigUnit:'$M',bigLabel:'Adjusted Present Value (APV)',
-      subs:[{l:'Unlevered Value (Vᵤ)',v:'$'+fmtNum(vu,0)+'M'},{l:'PV Tax Shield',v:'+$'+fmtNum(pvShield,0)+'M'},{l:'PV Distress Cost',v:'-$'+fmtNum(pvDistress,1)+'M'},{l:'Implied Equity Value',v:'$'+fmtNum(equity,0)+'M'}],
-      note:{type: pvDistress/pvShield>0.5?'warn':'good', text: pvDistress/pvShield>0.5?'Biaya financial distress ('+fmtNum(pvDistress,0)+'M) memakan lebih dari 50% manfaat tax shield ('+fmtNum(pvShield,0)+'M) — struktur modal terlalu agresif, potensi marginal return dari menambah utang sudah negatif.':'Tax shield ('+fmtNum(pvShield,0)+'M) jauh lebih besar dari estimated distress cost ('+fmtNum(pvDistress,0)+'M) — utang saat ini masih menciptakan nilai bersih positif.'},
-      chart:{xMin:0,xMax:3000,yMin:Math.min(...pts.map(p=>p.y))*0.9,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.debt_apv,series:[{label:'APV vs Level Utang',color:COLORS.cyan,pts}]}
-    };
-  }
-},
-{
-  id:'excessreturns',ch:13,year:1995,who:'Damodaran (Excess Return Model)',name:'Excess Return Valuation',
-  desc:'Perusahaan hanya menciptakan nilai jika ROIC > WACC. Model ini memisahkan nilai menjadi "assets in place" + PV excess returns dari pertumbuhan masa depan — lebih intuitif dari DCF murni.',
-  tex:'V = \\frac{NOPAT}{WACC} + \\frac{(ROIC-WACC)\\times IC}{WACC\\times(WACC-g)}',
-  vars:[
-    {k:'nopat2',label:'NOPAT',min:10,max:500,step:5,def:120,unit:'$M'},
-    {k:'ic2',label:'Invested Capital',min:100,max:3000,step:25,def:800,unit:'$M'},
-    {k:'wacc3',label:'WACC',min:5,max:18,step:0.25,def:9,unit:'%'},
-    {k:'growth_ex',label:'Growth Rate (g)',min:1,max:12,step:0.25,def:5,unit:'%'}
-  ],
-  calc(v){
-    if(v.wacc3<=v.growth_ex+0.5) v.wacc3 = v.growth_ex+1;
-    const roic = v.nopat2/v.ic2*100;
-    const assetsInPlace = v.nopat2/(v.wacc3/100);
-    const w=v.wacc3/100, g=v.growth_ex/100, r=roic/100;
-    const pvExcess = (r-w)*v.ic2/(w*(w-g));
-    const totalValue = assetsInPlace + pvExcess;
-    const pts = sweep(5,18,55,wacc=>{ if(wacc<=v.growth_ex+0.5) return null; const ww=wacc/100; return v.nopat2/ww + (r-ww)*v.ic2/(ww*(ww-g)); }).filter(p=>p.y!==null && Math.abs(p.y)<50000);
-    return {
-      big:fmtNum(totalValue,0),bigUnit:'$M',bigLabel:'Enterprise Value (Excess Return)',
-      subs:[{l:'ROIC',v:fmtNum(roic,2)+'%'},{l:'ROIC − WACC Spread',v:fmtNum(roic-v.wacc3,2)+'pp'},{l:'Assets in Place',v:'$'+fmtNum(assetsInPlace,0)+'M'},{l:'PV Future Excess Returns',v:(pvExcess>=0?'+':'')+fmtNum(pvExcess,0)+'M'}],
-      note:{type: roic<v.wacc3?'danger':roic-v.wacc3>5?'good':'info', text: roic<v.wacc3?'ROIC ('+fmtNum(roic,1)+'%) di BAWAH WACC ('+v.wacc3+'%): setiap pertumbuhan justru MENGHANCURKAN nilai — perusahaan seharusnya tidak berinvestasi, lebih baik kembalikan modal ke pemegang saham.':roic-v.wacc3>5?'Spread ROIC-WACC sangat positif ('+fmtNum(roic-v.wacc3,1)+'pp): perusahaan menciptakan nilai ekonomis besar per unit pertumbuhan — valuasi premium sangat justified.':'Spread ROIC-WACC tipis — pertumbuhan sedikit menciptakan nilai, tapi sensitif terhadap perubahan asumsi.'},
-      chart:{xMin:5,xMax:18,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.wacc3,series:[{label:'Enterprise Value vs WACC',color:COLORS.green,pts}]}
-    };
-  }
-},
-{
-  id:'dcfscenario',ch:13,year:1990,who:'McKinsey / Koller et al.',name:'DCF Scenario Analysis — Bull/Base/Bear',
-  desc:'DCF satu titik sering menyesatkan. Scenario analysis mengkombinasikan tiga skenario dengan probabilitas berbeda — hasil akhir adalah expected value tertimbang, lebih jujur tentang uncertainty.',
-  tex:'P_{intrinsic}=p_{bull}\\cdot V_{bull}+p_{base}\\cdot V_{base}+p_{bear}\\cdot V_{bear}',
-  vars:[
-    {k:'bull_g',label:'Bull Case: Revenue Growth',min:10,max:40,step:1,def:20,unit:'%'},
-    {k:'base_g',label:'Base Case: Revenue Growth',min:3,max:20,step:0.5,def:10,unit:'%'},
-    {k:'bear_g',label:'Bear Case: Revenue Growth',min:-10,max:10,step:0.5,def:-2,unit:'%'},
-    {k:'revenue',label:'Revenue Terkini',min:100,max:5000,step:50,def:1000,unit:'$M'},
-    {k:'margin_dcf',label:'Operating Margin Target',min:5,max:40,step:0.5,def:18,unit:'%'},
-    {k:'ev_mult',label:'Exit EV/EBITDA Multiple',min:4,max:20,step:0.5,def:10,unit:'x'},
-    {k:'wacc_sc',label:'WACC',min:6,max:15,step:0.25,def:9,unit:'%'}
-  ],
-  calc(v){
-    function scenarioEV(growthRate){
-      const revY5 = v.revenue*Math.pow(1+growthRate/100, 5);
-      const ebitda = revY5*(v.margin_dcf/100);
-      return ebitda*v.ev_mult/Math.pow(1+v.wacc_sc/100, 5);
-    }
-    const bull=scenarioEV(v.bull_g), base=scenarioEV(v.base_g), bear=scenarioEV(v.bear_g);
-    const probs={bull:0.25, base:0.50, bear:0.25};
-    const expected=probs.bull*bull+probs.base*base+probs.bear*bear;
-    const bars=[
-      {label:'Bear (25%)',value:bear,color:COLORS.red},
-      {label:'Base (50%)',value:base,color:COLORS.amber},
-      {label:'Bull (25%)',value:bull,color:COLORS.green},
-      {label:'Expected Value',value:expected,color:COLORS.cyan}
-    ];
-    return {
-      big:fmtNum(expected,0),bigUnit:'$M',bigLabel:'Expected Enterprise Value',
-      subs:[{l:'Bull Case EV',v:'$'+fmtNum(bull,0)+'M'},{l:'Base Case EV',v:'$'+fmtNum(base,0)+'M'},{l:'Bear Case EV',v:'$'+fmtNum(bear,0)+'M'},{l:'Bull/Bear Range',v:'$'+fmtNum(bear,0)+'–'+fmtNum(bull,0)+'M'}],
-      note:{type: (bull-bear)/expected>1.5?'warn':'info', text: (bull-bear)/expected>1.5?'Dispersi skenario sangat lebar (bull-bear >150% dari expected value) — uncertainty yang tinggi ini menandakan saham yang sulit dianalisis dengan DCF point estimate. Pendekatan probabilistik ini JAUH lebih jujur.':'Dispersi skenario manageable — confident interval relatif tidak terlalu lebar. DCF dalam konteks ini cukup reliable.'},
-      chart:{mode:'bars',bars}
-    };
-  }
-},
-{
-  id:'realoptions',ch:13,year:1977,who:'Stewart Myers (Real Options)',name:'Real Options — Option to Expand',
-  desc:'Investasi modal sering mengandung fleksibilitas yang tidak ditangkap NPV konvensional: opsi untuk mengekspansi jika sukses, menunda, atau abandon. Real option valuation menghargai fleksibilitas ini secara eksplisit.',
-  tex:'ROV=NPV_{base}+V_{call}(PV_{expansion},I_{expansion},\\sigma,T)',
-  vars:[
-    {k:'npv_base',label:'NPV Proyek Dasar',min:-200,max:500,step:5,def:30,unit:'$M'},
-    {k:'pv_expand',label:'PV Ekspansi jika Dilakukan',min:50,max:2000,step:25,def:400,unit:'$M'},
-    {k:'cost_expand',label:'Biaya Ekspansi (Strike)',min:50,max:2000,step:25,def:380,unit:'$M'},
-    {k:'sigma_re',label:'Volatilitas Aset Proyek (σ)',min:10,max:60,step:1,def:30,unit:'%'},
-    {k:'T_re',label:'Window Keputusan (tahun)',min:1,max:7,step:0.5,def:3,unit:' thn'},
-    {k:'rf_re',label:'Risk-Free Rate',min:2,max:7,step:0.25,def:4,unit:'%'}
-  ],
-  calc(v){
-    const callValue = bsPrice(v.pv_expand, v.cost_expand, v.rf_re/100, v.sigma_re/100, v.T_re, true);
-    const rov = v.npv_base + callValue;
-    const optionPremium = callValue;
-    const pts = sweep(10,60,50,sig=>bsPrice(v.pv_expand, v.cost_expand, v.rf_re/100, sig/100, v.T_re, true));
-    return {
-      big:fmtNum(rov,1),bigUnit:'$M',bigLabel:'Real Option Value (ROV)',
-      subs:[{l:'NPV Konvensional',v:'$'+fmtNum(v.npv_base,0)+'M'},{l:'Nilai Opsi Ekspansi',v:'+$'+fmtNum(callValue,1)+'M'},{l:'% Nilai dari Opsi',v:fmtNum(callValue/Math.max(rov,0.1)*100,1)+'%'}],
-      note:{type: v.npv_base<0&&rov>0?'good':v.npv_base<0&&rov<0?'danger':'info', text: v.npv_base<0&&rov>0?'NPV konvensional NEGATIF tapi ROV POSITIF — proyek yang tampak tidak layak secara DCF biasa sebenarnya bernilai ketika fleksibilitas ekspansi dihargai. Keputusan tepat: invest, pertahankan opsi.':v.npv_base<0&&rov<0?'Baik NPV maupun ROV negatif — bahkan dengan nilai opsi ekspansi, proyek ini tidak layak secara finansial.':'NPV sudah positif dan opsi ekspansi menambah nilai signifikan — kasus investasi yang sangat compelling.'},
-      chart:{xMin:10,xMax:60,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.sigma_re,series:[{label:'Nilai Opsi Ekspansi vs Volatilitas Proyek',color:COLORS.violet,pts}]}
-    };
-  }
-}
-]);
-
-/* ===================== BAB 14: FINANCIAL DISTRESS & RESTRUCTURING (4) ===================== */
-addF([
-{
-  id:'distressscore',ch:14,year:1995,who:'Ohlson (O-Score) / Zmijewski',name:'Ohlson O-Score (Distress Probability)',
-  desc:'O-Score Ohlson menggunakan logistic regression untuk menghasilkan PROBABILITAS kebangkrutan langsung — berbeda dari Z-Score Altman yang menggunakan discriminant analysis linear.',
-  tex:'P(bankrupt)=\\frac{1}{1+e^{-Y}},\\quad Y=f(\\text{leverage, coverage, liquidity})',
-  vars:[
-    {k:'tatl',label:'Total Assets / Total Liabilities',min:0.5,max:5,step:0.05,def:1.8,unit:'x'},
-    {k:'nltl',label:'Net Liabilities / Total Assets',min:-0.5,max:0.8,step:0.01,def:0.35,unit:''},
-    {k:'wctl',label:'Working Capital / Total Assets',min:-0.3,max:0.5,step:0.01,def:0.12,unit:''},
-    {k:'clca',label:'Current Liabilities / Current Assets',min:0.2,max:5,step:0.05,def:0.8,unit:'x'},
-    {k:'nitl',label:'Net Income / Total Assets (ROA)',min:-0.2,max:0.2,step:0.005,def:0.05,unit:''}
-  ],
-  calc(v){
-    // Ohlson's Y function (simplified key variables)
-    const Y = -1.32 - 0.407*Math.log(v.tatl) + 6.03*v.nltl - 1.43*v.wctl + 0.076*v.clca - 1.72*(v.tatl>1?0:1) - 2.37*v.nitl - 0.285*(v.nitl<0?1:0);
-    const prob = 1/(1+Math.exp(-Y))*100;
-    const pts = sweep(0.5,5,50,ta=>{ const y2=-1.32-0.407*Math.log(ta)+6.03*v.nltl-1.43*v.wctl+0.076*v.clca-1.72*(ta>1?0:1)-2.37*v.nitl-0.285*(v.nitl<0?1:0); return 1/(1+Math.exp(-y2))*100; });
-    return {
-      big:fmtNum(prob,2),bigUnit:'%',bigLabel:'Probabilitas Kebangkrutan (O-Score)',
-      subs:[{l:'Y (Log-Odds)',v:fmtNum(Y,3)},{l:'Net Liabilities/Assets',v:fmtNum(v.nltl*100,1)+'%'},{l:'Current Ratio (inverse)',v:fmtNum(v.clca,2)+'x'}],
-      note:{type: prob>30?'danger':prob>10?'warn':'good', text: prob>30?'Probabilitas kebangkrutan >30%: perusahaan dalam distress serius. O-Score lebih akurat dari Z-Score untuk perusahaan yang benar-benar mendekati default karena output adalah probabilitas langsung.':prob>10?'Risiko distress elevated (10-30%): perlu monitoring ketat terutama coverage ratio dan likuiditas jangka pendek.':'Risiko kebangkrutan rendah (<10%): fundamental financial cukup sehat berdasarkan model Ohlson.'},
-      chart:{xMin:0.5,xMax:5,yMin:0,yMax:Math.min(Math.max(...pts.map(p=>p.y))*1.1,100),vline:v.tatl,hlines:[{y:30,color:COLORS.red,dash:true},{y:10,color:COLORS.amber,dash:true}],series:[{label:'Prob. Kebangkrutan vs Assets/Liabilities',color:COLORS.red,pts}]}
-    };
-  }
-},
-{
-  id:'debtrestructure',ch:14,year:1980,who:'Praktik Investment Banking',name:'Debt Restructuring — Haircut Analysis',
-  desc:'Dalam restrukturisasi utang, kreditur menerima "haircut" — pembayaran kurang dari nilai nominal. Analisis ini menghitung recovery value dan haircut berdasarkan enterprise value vs waterfall klaim.',
-  tex:'Recovery_i=\\min\\left(FV_i,\\;\\frac{EV-\\sum_{j<i}FV_j}{FV_i}\\right)',
-  vars:[
-    {k:'ev_restr',label:'Enterprise Value (Distressed)',min:50,max:2000,step:25,def:350,unit:'$M'},
-    {k:'secured',label:'Secured Debt (Senior)',min:0,max:1000,step:25,def:200,unit:'$M'},
-    {k:'unsecured',label:'Unsecured Debt',min:0,max:1000,step:25,def:300,unit:'$M'},
-    {k:'subdebt',label:'Subordinated / Junior Debt',min:0,max:500,step:10,def:150,unit:'$M'}
-  ],
-  calc(v){
-    let remaining = v.ev_restr;
-    const secRec = Math.min(v.secured, remaining);
-    remaining -= secRec;
-    const unsecRec = Math.min(v.unsecured, remaining);
-    remaining -= unsecRec;
-    const subRec = Math.min(v.subdebt, remaining);
-    remaining -= subRec;
-    const equityRec = Math.max(remaining, 0);
-    const secHaircut = v.secured>0 ? (1-secRec/v.secured)*100 : 0;
-    const unsecHaircut = v.unsecured>0 ? (1-unsecRec/v.unsecured)*100 : 0;
-    const subHaircut = v.subdebt>0 ? (1-subRec/v.subdebt)*100 : 0;
-    const bars=[
-      {label:'Secured Rec.',value:secRec,color:COLORS.green},
-      {label:'Unsec. Rec.',value:unsecRec,color:COLORS.amber},
-      {label:'Sub. Rec.',value:subRec,color:COLORS.red},
-      {label:'Equity Rec.',value:equityRec,color:COLORS.faint}
-    ];
-    return {
-      big:fmtNum(unsecHaircut,1),bigUnit:'%',bigLabel:'Haircut Unsecured Creditors',
-      subs:[{l:'Secured Recovery',v:fmtNum(secRec,0)+'M (haircut '+fmtNum(secHaircut,1)+'%)'},{l:'Unsecured Recovery',v:fmtNum(unsecRec,0)+'M (haircut '+fmtNum(unsecHaircut,1)+'%)'},{l:'Sub-debt Recovery',v:fmtNum(subRec,0)+'M (haircut '+fmtNum(subHaircut,1)+'%)'},{l:'Equity Residual',v:'$'+fmtNum(equityRec,0)+'M'}],
-      note:{type: equityRec>0?'info':unsecHaircut>50?'danger':'warn', text: equityRec>0?'EV cukup untuk membayar seluruh kreditur — equity pemegang saham masih memiliki nilai residual. Ini restrukturisasi yang relatif "gentle".':unsecHaircut>50?'Haircut besar untuk unsecured creditors ('+fmtNum(unsecHaircut,1)+'%) — EV tidak cukup menutupi seluruh utang. Kreditur subordinasi praktis wipeout.':'Situasi distress berat — seluruh EV habis untuk kreditur, pemegang saham tidak mendapatkan apa-apa.'},
-      chart:{mode:'bars',bars}
-    };
-  }
-},
-{
-  id:'dip',ch:14,year:1978,who:'US Bankruptcy Code Chapter 11',name:'DIP Financing — Priority & Rate',
-  desc:'Debtor-in-Possession (DIP) financing adalah pinjaman super-priority yang diberikan ke perusahaan dalam Chapter 11 — pemberi pinjaman DIP berada di atas semua kreditur existing, sehingga menuntut spread premium.',
-  tex:'r_{DIP}=r_f+\\text{Spread}_{DIP}+\\text{Complexity Premium}',
-  vars:[
-    {k:'rf_dip',label:'Risk-Free Rate',min:2,max:7,step:0.25,def:4.5,unit:'%'},
-    {k:'base_spread',label:'Base DIP Spread',min:200,max:800,step:25,def:400,unit:' bps'},
-    {k:'complexity',label:'Deal Complexity Premium',min:0,max:300,step:25,def:100,unit:' bps'},
-    {k:'dip_amount',label:'DIP Facility Size',min:10,max:1000,step:10,def:150,unit:'$M'},
-    {k:'duration_dip',label:'Durasi Chapter 11 (est.)',min:6,max:36,step:1,def:12,unit:' bln'}
-  ],
-  calc(v){
-    const totalRatePct = v.rf_dip + (v.base_spread+v.complexity)/100;
-    const annualCost = v.dip_amount*(totalRatePct/100);
-    const totalCost = annualCost*(v.duration_dip/12);
-    const fees = v.dip_amount*0.02; // ~2% upfront fees typical
-    const allInCost = (annualCost+fees/(v.duration_dip/12))/v.dip_amount*100;
-    const pts = sweep(200,800,60,sp=>v.rf_dip+(sp+v.complexity)/100);
-    return {
-      big:fmtNum(totalRatePct,2),bigUnit:'%',bigLabel:'DIP Financing Rate (All-In)',
-      subs:[{l:'Total Interest Cost',v:'$'+fmtNum(totalCost,1)+'M over '+v.duration_dip+' months'},{l:'Upfront Fees (est.)',v:'$'+fmtNum(fees,1)+'M'},{l:'All-In Effective Rate',v:fmtNum(allInCost,2)+'% p.a.'}],
-      note:{type: totalRatePct>12?'warn':'info', text: totalRatePct>12?'Rate DIP sangat tinggi (>12%): biaya restrukturisasi membebani kemampuan perusahaan untuk emerge dari Chapter 11 dengan balance sheet sehat. Negosiasi agresif spread dan fee sangat penting.':'DIP rate dalam rentang normal untuk proses Chapter 11 — super-priority status pemberi pinjaman membenarkan spread premium vs market rate biasa.'},
-      chart:{xMin:200,xMax:800,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.base_spread,series:[{label:'DIP Rate (%) vs Base Spread (bps)',color:COLORS.red,pts}]}
-    };
-  }
-},
-{
-  id:'covenantheadroom',ch:14,year:1990,who:'Credit Agreement Practice',name:'Covenant Headroom Analysis',
-  desc:'Analisis buffer perusahaan terhadap financial covenant dalam perjanjian kredit — leverage covenant dan interest coverage covenant yang paling umum. Headroom yang menyusut adalah early warning signal.',
-  tex:'\\text{Headroom}_{leverage}=\\frac{Covenant_{max}-Actual}{Covenant_{max}}',
-  vars:[
-    {k:'actual_lev',label:'Net Leverage Actual (Net Debt/EBITDA)',min:0.5,max:8,step:0.1,def:3.2,unit:'x'},
-    {k:'cov_lev',label:'Maximum Leverage Covenant',min:1,max:10,step:0.1,def:4.5,unit:'x'},
-    {k:'actual_cov',label:'Interest Coverage Actual (EBITDA/Interest)',min:0.5,max:15,step:0.1,def:4.5,unit:'x'},
-    {k:'cov_mincov',label:'Minimum Coverage Covenant',min:1,max:6,step:0.1,def:2.5,unit:'x'},
-    {k:'ebitda_stress',label:'EBITDA Stress (% decline scenario)',min:0,max:50,step:1,def:20,unit:'%'}
-  ],
-  calc(v){
-    const levHeadroom = (v.cov_lev-v.actual_lev)/v.cov_lev*100;
-    const covHeadroom = (v.actual_cov-v.cov_mincov)/v.actual_cov*100;
-    const stressLev = v.actual_lev/(1-v.ebitda_stress/100);
-    const stressCov = v.actual_cov*(1-v.ebitda_stress/100);
-    const breachLev = stressLev > v.cov_lev;
-    const breachCov = stressCov < v.cov_mincov;
-    const bars=[
-      {label:'Actual Leverage',value:v.actual_lev,color:COLORS.amber},
-      {label:'Max Covenant',value:v.cov_lev,color:COLORS.faint},
-      {label:'Actual Coverage',value:v.actual_cov,color:COLORS.green},
-      {label:'Min Covenant',value:v.cov_mincov,color:COLORS.faint}
-    ];
-    return {
-      big:fmtNum(levHeadroom,1),bigUnit:'%',bigLabel:'Leverage Covenant Headroom',
-      subs:[{l:'Coverage Headroom',v:fmtNum(covHeadroom,1)+'%'},{l:'Leverage di Stress Scenario',v:fmtNum(stressLev,2)+'x '+(breachLev?'⚠️ BREACH':'✓ OK')},{l:'Coverage di Stress Scenario',v:fmtNum(stressCov,2)+'x '+(breachCov?'⚠️ BREACH':'✓ OK')}],
-      note:{type: breachLev||breachCov?'danger':levHeadroom<20||covHeadroom<20?'warn':'good', text: breachLev||breachCov?'COVENANT BREACH dalam stress scenario EBITDA turun '+v.ebitda_stress+'%! Perusahaan perlu negosiasi amendment atau waiver preventif sebelum financial distress terjadi.':levHeadroom<20||covHeadroom<20?'Headroom mulai sempit (<20%) — tidak ada covenant breach saat ini tapi buffer tipis. Monitoring ketat dan contingency planning diperlukan.':'Headroom cukup lebar — bahkan dalam stress scenario EBITDA -'+v.ebitda_stress+'% perusahaan tidak melanggar covenant.'},
-      chart:{mode:'bars',bars}
-    };
-  }
-}
-]);
-
-/* ===================== BAB 15: PRIVATE EQUITY & VENTURE CAPITAL (5) ===================== */
-addF([
-{
-  id:'vcvaluation',ch:15,year:1987,who:'VC Industry Practice',name:'VC Valuation — Pre & Post-Money',
-  desc:'Mekanisme dasar valuasi startup: post-money = pre-money + investasi baru. Ownership dilution dan implied valuation menentukan negosiasi term sheet. Anti-dilution dan option pool juga mempengaruhi effective ownership.',
-  tex:'\\%_{investor}=\\frac{Investment}{Post\\text{-}Money},\\quad Post=Pre+Investment',
-  vars:[
-    {k:'premoney',label:'Pre-Money Valuation',min:1,max:1000,step:1,def:20,unit:'$M'},
-    {k:'investment',label:'New Investment Round',min:0.5,max:500,step:0.5,def:5,unit:'$M'},
-    {k:'optionpool',label:'Option Pool (ESOP)',min:0,max:25,step:0.5,def:10,unit:'%'},
-    {k:'founder_pre',label:'Founder Ownership (pre-round)',min:10,max:100,step:1,def:70,unit:'%'}
-  ],
-  calc(v){
-    const postmoney = v.premoney + v.investment;
-    const investorOwn = v.investment/postmoney*100;
-    const dilutionFactor = v.premoney/postmoney;
-    const founderPost = v.founder_pre*dilutionFactor*(1-v.optionpool/100);
-    const pricePerShare = v.premoney/(100-v.optionpool); // simplified unit share
-    const pts = sweep(1,1000,55,pre=>{ const post=pre+v.investment; return v.investment/post*100; });
-    return {
-      big:fmtNum(postmoney,1),bigUnit:'$M',bigLabel:'Post-Money Valuation',
-      subs:[{l:'Investor Ownership (new)',v:fmtNum(investorOwn,2)+'%'},{l:'Founder Post-Round',v:fmtNum(founderPost,2)+'%'},{l:'Option Pool (ESOP)',v:fmtNum(v.optionpool,1)+'%'},{l:'Remaining Unaccounted',v:fmtNum(100-investorOwn-founderPost-v.optionpool,2)+'%'}],
-      note:{type: investorOwn>35?'warn':founderPost<40?'info':'good', text: investorOwn>35?'Investor mendapatkan >35% di round ini — founder ownership terdilusi signifikan. Pastikan ada vesting schedule dan anti-dilution provisions yang melindungi founder untuk round berikutnya.':founderPost<40?'Founder ownership sudah di bawah 40% setelah round ini — mendekati ambang di mana motivation dan control menjadi concern. Struktur governance board composition lebih penting.':'Ownership distribution yang sehat — investor mendapat equity meaningful, founder masih memiliki mayoritas.'},
-      chart:{xMin:1,xMax:1000,yMin:0,yMax:Math.min(Math.max(...pts.map(p=>p.y))*1.1,60),vline:v.premoney,series:[{label:'Investor Ownership (%) vs Pre-Money ($M)',color:COLORS.violet,pts}]}
-    };
-  }
-},
-{
-  id:'peportfolio',ch:15,year:1980,who:'PE Fund Practice',name:'PE Fund — J-Curve & DPI/TVPI',
-  desc:'PE fund menunjukkan J-curve karena fees dan kerugian awal sebelum realisasi exit — DPI (Distributions to Paid-In) mengukur cash returned, TVPI (Total Value to Paid-In) termasuk NAV unrealized.',
-  tex:'TVPI=\\frac{DPI+RVPI}{Paid\\text{-}In\\ Capital}',
-  vars:[
-    {k:'committed',label:'Fund Size (Committed Capital)',min:50,max:5000,step:50,def:500,unit:'$M'},
-    {k:'calledpct',label:'Capital Called (%)',min:20,max:100,step:5,def:80,unit:'%'},
-    {k:'distributions',label:'Cash Distributions to LPs',min:0,max:3000,step:25,def:200,unit:'$M'},
-    {k:'navunreal',label:'NAV Unrealized Portfolio',min:0,max:5000,step:25,def:650,unit:'$M'},
-    {k:'mgmtfee',label:'Mgmt Fee Rate (p.a.)',min:1,max:2.5,step:0.1,def:2,unit:'%'},
-    {k:'vintage',label:'Vintage Year (Tahun Investasi)',min:1,max:12,step:1,def:6,unit:' thn'}
-  ],
-  calc(v){
-    const paidIn = v.committed*v.calledpct/100;
-    const dpi = v.distributions/paidIn;
-    const rvpi = v.navunreal/paidIn;
-    const tvpi = dpi+rvpi;
-    const totalFees = v.committed*v.mgmtfee/100*v.vintage;
-    const netIRRestimate = tvpi>1 ? (Math.pow(tvpi, 1/v.vintage)-1)*100 : -(1-tvpi)/v.vintage*100;
-    const pts = sweep(1,12,11,yr=>{ const dist=v.distributions*(yr/v.vintage); const nav=v.navunreal*(yr<=v.vintage*0.6?yr/(v.vintage*0.6):1+(v.vintage-yr)/(v.vintage*0.4)*0.3); return dist/paidIn+nav/paidIn; });
-    return {
-      big:fmtNum(tvpi,2),bigUnit:'x',bigLabel:'TVPI (Total Value to Paid-In)',
-      subs:[{l:'DPI (Cash Distributions)',v:fmtNum(dpi,2)+'x'},{l:'RVPI (Unrealized NAV)',v:fmtNum(rvpi,2)+'x'},{l:'Total Mgmt Fees Paid',v:'$'+fmtNum(totalFees,0)+'M'},{l:'Est. Gross IRR',v:fmtNum(netIRRestimate,1)+'%'}],
-      note:{type: tvpi>2?'good':tvpi<1.2&&v.vintage>7?'warn':'info', text: tvpi>2?'TVPI >2x: fund sangat outperform — biasanya fund top quartile di vintage year tersebut. DPI yang tinggi ('+fmtNum(dpi,2)+'x) mengindikasikan exit realization yang kuat.':tvpi<1.2&&v.vintage>7?'TVPI rendah untuk fund di tahun ke-'+v.vintage+' — pada tahap ini sebagian besar portfolio seharusnya sudah realized. Fund mungkin underperform vs benchmark buyout.':'J-curve masih dalam progress normal — TVPI akan terus bergerak seiring exits lebih banyak di tahun-tahun mendatang.'},
-      chart:{xMin:1,xMax:12,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.2,vline:v.vintage,hlines:[{y:1,color:COLORS.faint,dash:true}],series:[{label:'TVPI Evolution (J-Curve)',color:COLORS.cyan,pts}]}
-    };
-  }
-},
-{
-  id:'portfolioconstruction',ch:15,year:1970,who:'PE/VC Portfolio Theory',name:'Portfolio Construction — Position Sizing',
-  desc:'Kelly Criterion dan position sizing untuk portfolio investasi — mengoptimalkan ukuran posisi berdasarkan edge (win rate × win/loss ratio) tanpa mengabaikan risiko ruin.',
-  tex:'f^*=\\frac{bp-(1-p)}{b}=\\frac{p(b+1)-1}{b}',
-  vars:[
-    {k:'winprob',label:'Probabilitas Win',min:0.1,max:0.9,step:0.01,def:0.55,unit:''},
-    {k:'oddsratio',label:'Win/Loss Odds Ratio (b)',min:0.5,max:10,step:0.1,def:2.5,unit:'x'},
-    {k:'halvekelly',label:'Fraction of Kelly',min:0.1,max:1,step:0.05,def:0.5,unit:'x'},
-    {k:'portfolio',label:'Portfolio Value',min:100,max:100000,step:100,def:10000,unit:'$K'}
-  ],
-  calc(v){
-    const kellyFull = (v.winprob*v.oddsratio-(1-v.winprob))/v.oddsratio;
-    const kellyFrac = kellyFull*v.halvekelly;
-    const positionSize = Math.max(kellyFrac,0)*v.portfolio;
-    const edge = v.winprob*v.oddsratio-(1-v.winprob);
-    const expectedReturn = edge*kellyFrac*100;
-    const pts = sweep(0.1,0.9,56,p=>{ const k=(p*v.oddsratio-(1-p))/v.oddsratio*v.halvekelly; return Math.max(k,0)*100; });
-    return {
-      big:fmtNum(kellyFrac*100,1),bigUnit:'%',bigLabel:'Kelly Position Size (Fractional)',
-      subs:[{l:'Full Kelly',v:fmtNum(kellyFull*100,1)+'%'},{l:'Dollar Position',v:'$'+fmtNum(positionSize,0)+'K'},{l:'Edge (Expected Value per unit)',v:fmtNum(edge*100,2)+'%'},{l:'Expected Return on Portfolio',v:fmtNum(expectedReturn,2)+'%'}],
-      note:{type: kellyFull>0.5?'warn':edge<0?'danger':'good', text: edge<0?'Edge NEGATIF: ini adalah negative expected value trade — Kelly mengatakan bet 0% (jangan masuk posisi).':kellyFull>0.5?'Full Kelly >50% sangat agresif — meski secara teori optimal, volatility portfolio akan sangat tinggi. Fractional Kelly ('+v.halvekelly+'× = '+fmtNum(kellyFrac*100,1)+'%) lebih prudent untuk menghindari ruin dari variance.':'Kelly sizing dalam batas konservatif — ukuran posisi mengoptimalkan growth rate jangka panjang sambil membatasi drawdown.'},
-      chart:{xMin:0.1,xMax:0.9,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.15,vline:v.winprob,hlines:[{y:25,color:COLORS.faint,dash:true}],series:[{label:'Kelly Size (%) vs Win Probability',color:COLORS.amber,pts}]}
-    };
-  }
-}
-]);
 
 /* =========================================================
    QUANT CODEX — UI ENGINE
@@ -2597,9 +2324,9 @@ let activeId=null, currentSeed=(Date.now()&0xffffff), chartInst=null, searchQ=''
 
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function chColorKey(ch){return ({1:'amber',2:'red',3:'green',4:'cyan',5:'violet',6:'amber',7:'cyan',8:'green',9:'violet',10:'red',11:'amber',12:'cyan'})[ch]||'amber';}
+function chColorKey(ch){return ({1:'amber',2:'red',3:'green',4:'cyan',5:'violet',6:'teal',7:'orange',8:'sky',9:'rose'})[ch]||'amber';}
 function chColor(ch){return COLORS[chColorKey(ch)];}
-function chIcon(ch){return ({1:'💎',2:'⚡',3:'📊',4:'🌍',5:'🔮',6:'🏦',7:'🏛️',8:'🏢',9:'💱',10:'📋',11:'🧮',12:'📈'})[ch]||'•';}
+function chIcon(ch){return ({1:'💎',2:'⚡',3:'📊',4:'🌍',5:'🔮',6:'🏦',7:'🤝',8:'📋',9:'📈'})[ch]||'•';}
 
 /* ---------- ticker ---------- */
 function buildTicker(){
@@ -2651,7 +2378,7 @@ $('searchInput').addEventListener('input',e=>{
 function renderWelcome(){
   $('main').innerHTML=`
     <div class="intro-card">
-      <b>📊 Selamat datang di Wall Street Codex.</b> Perpustakaan interaktif berisi <b>${FORMULAS.length} rumus</b> accounting, valuation, dan corporate finance dari tahun 1900–2000, terbagi dalam 5 bab.
+      <b>📊 Selamat datang di Wall Street Codex.</b> Perpustakaan interaktif berisi <b>${FORMULAS.length} rumus</b> accounting, valuation, dan corporate finance dari tahun 1896–2019, terbagi dalam 9 bab.
       Pilih rumus dari daftar di samping (atau dari ticker berjalan di atas), lalu geser parameter untuk melihat hasil kalkulasi dan grafik bergerak secara real-time.
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
