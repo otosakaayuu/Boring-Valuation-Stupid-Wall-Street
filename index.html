@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Wall Street Codex · 78 Rumus Accounting & Corporate Finance Interaktif</title>
+<title>Wall Street Codex · 94 Rumus Accounting & Corporate Finance Interaktif</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 :root{
@@ -294,7 +294,8 @@ function fmtCompact(v){
 /* ---------- colors ---------- */
 const COLORS={bg:'#05080f',panel:'#0a0f1c',border:'#192234',borderSoft:'#121a29',text:'#dde2ec',dim:'#7a839a',faint:'#4a5268',
   amber:'#ffb020',cyan:'#5ec8d8',green:'#34d399',red:'#ef5d5d',violet:'#a78bfa',
-  teal:'#2dd4bf',orange:'#fb923c',sky:'#38bdf8',rose:'#fb7185'};
+  teal:'#2dd4bf',orange:'#fb923c',sky:'#38bdf8',rose:'#fb7185',
+  lime:'#a3e635',indigo:'#818cf8',gold:'#facc15'};
 
 /* ---------- canvas drawing primitives ---------- */
 function roundRectPath(ctx,x,y,w,h,r){
@@ -513,7 +514,10 @@ const CHAPTER_META=[
   {id:6,title:'Bank & Financial Institution Analysis',sub:'NIM, CAR, LCR & Bank-Specific Metrics'},
   {id:7,title:'M&A & LBO Advanced',sub:'LBO Returns, Synergy, Control Premium & Bankruptcy'},
   {id:8,title:'Lease & Pension Accounting',sub:'ASC 842/IFRS 16, Pension Funded Status'},
-  {id:9,title:'Index Methodology & Advanced Liquidity',sub:'Free-Float Weighting, Cash & Defensive Ratios'}
+  {id:9,title:'Index Methodology & Advanced Liquidity',sub:'Free-Float Weighting, Cash & Defensive Ratios'},
+  {id:10,title:'Tax Accounting & Deferred Tax',sub:'Effective Tax Rate, DTA/DTL & Tax Shield'},
+  {id:11,title:'Inventory & COGS Methods',sub:'FIFO, LIFO, Weighted Average & LIFO Reserve'},
+  {id:12,title:'Segment Reporting & Consolidation',sub:'NCI, Equity Method & Purchase Price Allocation'}
 ];
 
 /* ---------- formula registry ---------- */
@@ -2316,6 +2320,376 @@ addF([
 }
 ]);
 
+/* ===================== BAB 10: TAX ACCOUNTING & DEFERRED TAX (6) ===================== */
+addF([
+{
+  id:'effectivetaxrate',ch:10,year:1970,who:'Praktik Analisis Pajak Korporat',name:'Effective Tax Rate vs Statutory Rate',
+  desc:'Effective Tax Rate (ETR) — pajak AKTUAL yang dibayar relatif terhadap pretax income — sering BERBEDA dari statutory rate (tarif resmi) karena kredit pajak, insentif, perbedaan pajak luar negeri, dan item permanen lainnya.',
+  tex:'ETR=\\frac{\\text{Tax Expense}}{\\text{Pretax Income}}',
+  vars:[
+    {k:'pretaxincome',label:'Pretax Income',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'taxexpense2',label:'Tax Expense (aktual)',min:0,max:150,step:1,def:38,unit:'$M'},
+    {k:'statutoryrate2',label:'Statutory Tax Rate',min:10,max:35,step:1,def:25,unit:'%'}
+  ],
+  calc(v){
+    const etr = v.taxexpense2/v.pretaxincome*100;
+    const gap = v.statutoryrate2-etr;
+    const pts = sweep(0,150,60,te=>te/v.pretaxincome*100);
+    return {
+      big:fmtNum(etr,2),bigUnit:'%',bigLabel:'Effective Tax Rate',
+      subs:[{l:'Statutory Rate',v:fmtNum(v.statutoryrate2,1)+'%'},{l:'Gap (Statutory - Effective)',v:(gap>=0?'+':'')+fmtNum(gap,2)+'pp'}],
+      note:{type: gap>8?'info':gap<-3?'warn':'good', text: gap>8?'Gap besar (ETR jauh di bawah statutory): perusahaan banyak memanfaatkan kredit pajak, insentif R&D, atau struktur pajak luar negeri — perlu cek apakah ini SUSTAINABLE atau bersifat one-time (misal dari resolusi audit pajak masa lalu).':gap<-3?'ETR LEBIH TINGGI dari statutory rate: ada item non-deductible signifikan (seperti goodwill impairment yang sering tidak deductible) atau pajak luar negeri dengan tarif lebih tinggi.':'ETR relatif dekat dengan statutory rate — struktur pajak perusahaan relatif "standar" tanpa optimasi pajak agresif.'},
+      chart:{xMin:0,xMax:150,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.taxexpense2,hlines:[{y:v.statutoryrate2,color:COLORS.faint,dash:true}],series:[{label:'ETR vs Tax Expense',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'deferredtaxliability',ch:10,year:1992,who:'FASB SFAS 109 (modern: ASC 740)',name:'Deferred Tax Liability (Depresiasi)',
+  desc:'Muncul dari TEMPORARY DIFFERENCES antara depresiasi akuntansi (book) dan depresiasi pajak (biasanya dipercepat/accelerated) — perusahaan membayar PAJAK LEBIH RENDAH sekarang, tapi harus "membayar kembali" di masa depan saat perbedaan ini terbalik (reverses).',
+  tex:'DTL=(\\text{Tax Depreciation}-\\text{Book Depreciation})\\times \\text{Tax Rate}',
+  vars:[
+    {k:'bookdep',label:'Book Depreciation',min:10,max:200,step:5,def:50,unit:'$M'},
+    {k:'taxdep',label:'Tax Depreciation (accelerated)',min:10,max:300,step:5,def:80,unit:'$M'},
+    {k:'taxrate5',label:'Tax Rate',min:10,max:35,step:1,def:25,unit:'%'}
+  ],
+  calc(v){
+    const tempDiff = v.taxdep-v.bookdep;
+    const dtl = tempDiff*v.taxrate5/100;
+    const pts = sweep(10,300,60,td=>(td-v.bookdep)*v.taxrate5/100);
+    return {
+      big:fmtNum(dtl,2),bigUnit:'$M',bigLabel:'Deferred Tax Liability',
+      subs:[{l:'Temporary Difference',v:'$'+fmtNum(tempDiff,1)+'M'},{l:'Tax Rate',v:fmtNum(v.taxrate5,1)+'%'}],
+      note:{type: dtl<0?'info':'info', text: dtl<0?'Tax depreciation LEBIH KECIL dari book depreciation pada periode ini — temporary difference berbalik arah, menghasilkan DEFERRED TAX ASSET, bukan liability (situasi terjadi di akhir umur aset saat tax depreciation sudah habis tapi book depreciation masih berjalan).':'DTL mencerminkan PAJAK YANG DITUNDA, bukan dihindari — saat aset sudah fully depreciated untuk tujuan pajak (tapi book depreciation masih berjalan), arah perbedaan akan BERBALIK dan DTL ini akan "reverse", meningkatkan tax expense di periode mendatang.'},
+      chart:{xMin:10,xMax:300,yMin:Math.min(...pts.map(p=>p.y))-5,yMax:Math.max(...pts.map(p=>p.y))+5,vline:v.taxdep,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'DTL vs Tax Depreciation',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'deferredtaxasset',ch:10,year:1992,who:'FASB SFAS 109 (modern: ASC 740)',name:'Deferred Tax Asset — NOL Carryforward',
+  desc:'Net Operating Loss (NOL) yang TIDAK bisa dipakai mengurangi pajak tahun ini (karena perusahaan rugi) bisa di-carryforward untuk mengurangi pajak di TAHUN MENDATANG yang profitable — menciptakan deferred tax asset di balance sheet.',
+  tex:'DTA_{NOL}=\\text{NOL Carryforward}\\times \\text{Tax Rate}',
+  vars:[
+    {k:'nolcarryforward',label:'NOL Carryforward Balance',min:50,max:1000,step:25,def:400,unit:'$M'},
+    {k:'taxrate6',label:'Tax Rate (saat akan dipakai)',min:10,max:35,step:1,def:25,unit:'%'},
+    {k:'valallowpct',label:'Valuation Allowance %',min:0,max:100,step:5,def:0,unit:'%'}
+  ],
+  calc(v){
+    const grossDTA = v.nolcarryforward*v.taxrate6/100;
+    const netDTA = grossDTA*(1-v.valallowpct/100);
+    const pts = sweep(0,100,60,va=>grossDTA*(1-va/100));
+    return {
+      big:fmtNum(netDTA,2),bigUnit:'$M',bigLabel:'Net Deferred Tax Asset (NOL)',
+      subs:[{l:'Gross DTA',v:'$'+fmtNum(grossDTA,1)+'M'},{l:'Valuation Allowance',v:'$'+fmtNum(grossDTA-netDTA,1)+'M'}],
+      note:{type: v.valallowpct>50?'danger':v.valallowpct>0?'warn':'info', text: v.valallowpct>50?'Valuation allowance BESAR (>50%): manajemen menilai SEBAGIAN BESAR DTA ini kemungkinan TIDAK akan terealisasi (perusahaan diragukan bisa profitable cukup di masa depan untuk memanfaatkan NOL) — sinyal pesimisme manajemen terhadap prospek earnings jangka panjang.':v.valallowpct>0?'Ada valuation allowance parsial: manajemen punya keyakinan CAMPURAN tentang kemampuan merealisasikan NOL — perubahan valuation allowance dari periode ke periode bisa secara signifikan mempengaruhi net income (non-cash).':'Tidak ada valuation allowance: manajemen yakin penuh NOL carryforward ini akan termanfaatkan — DTA dicatat penuh sesuai nilai gross-nya.'},
+      chart:{xMin:0,xMax:100,yMin:0,yMax:grossDTA*1.1,vline:v.valallowpct,series:[{label:'Net DTA vs Valuation Allowance %',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'taxshielddebt',ch:10,year:1963,who:'Modigliani & Miller (with Taxes)',name:'Interest Tax Shield',
+  desc:'Beban bunga utang adalah pengeluaran yang DEDUCTIBLE untuk pajak — setiap dollar bunga yang dibayar mengurangi tax expense, menciptakan "tax shield" yang menjadi alasan utama mengapa utang punya keunggulan biaya dibanding ekuitas dalam WACC.',
+  tex:'\\text{Tax Shield}=\\text{Interest Expense}\\times \\text{Tax Rate}',
+  vars:[
+    {k:'interestexp3',label:'Interest Expense',min:5,max:200,step:5,def:40,unit:'$M'},
+    {k:'taxrate7',label:'Tax Rate',min:10,max:35,step:1,def:25,unit:'%'}
+  ],
+  calc(v){
+    const taxShield = v.interestexp3*v.taxrate7/100;
+    const aftertaxCostOfDebt = v.interestexp3*(1-v.taxrate7/100);
+    const pts = sweep(5,200,60,ie=>ie*v.taxrate7/100);
+    return {
+      big:fmtNum(taxShield,2),bigUnit:'$M',bigLabel:'Interest Tax Shield',
+      subs:[{l:'After-Tax Cost of Debt',v:'$'+fmtNum(aftertaxCostOfDebt,1)+'M'},{l:'Tax Rate',v:fmtNum(v.taxrate7,1)+'%'}],
+      note:{type:'info', text: 'Inilah mengapa rumus WACC mengalikan cost of debt dengan (1-Tax Rate) — secara EFEKTIF, "biaya riil" utang bagi perusahaan LEBIH KECIL dari coupon rate nominalnya, karena sebagian dibayar lewat penghematan pajak. Tax shield inilah yang menjadi salah satu motivasi utama di balik strategi leverage tinggi pada LBO (lihat Bab 7).'},
+      chart:{xMin:5,xMax:200,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.interestexp3,series:[{label:'Tax Shield vs Interest Expense',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'booktaxdiff',ch:10,year:2004,who:'IRS / FASB (Schedule M-3 framework)',name:'Permanent vs Temporary Book-Tax Differences',
+  desc:'Membedakan dua jenis selisih antara laba akuntansi (book) dan laba pajak (taxable income) — PERMANENT differences TIDAK PERNAH terbalik (seperti municipal bond interest yang tax-exempt), sedangkan TEMPORARY differences akan terbalik di masa depan (seperti depresiasi).',
+  tex:'\\text{Taxable Income}=\\text{Book Income}\\pm \\text{Permanent Diff}\\pm \\text{Temporary Diff}',
+  vars:[
+    {k:'bookincome2',label:'Book Income (Pretax)',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'permanentdiff',label:'Permanent Difference (mis: tax-exempt income)',min:-50,max:10,step:1,def:-15,unit:'$M'},
+    {k:'temporarydiff',label:'Temporary Difference (mis: depresiasi)',min:-50,max:50,step:1,def:20,unit:'$M'}
+  ],
+  calc(v){
+    const taxableIncome = v.bookincome2+v.permanentdiff+v.temporarydiff;
+    const pts = sweep(-50,50,60,td=>v.bookincome2+v.permanentdiff+td);
+    return {
+      big:fmtNum(taxableIncome,1),bigUnit:'$M',bigLabel:'Taxable Income (Estimasi)',
+      subs:[{l:'Book Income',v:'$'+fmtNum(v.bookincome2,1)+'M'},{l:'Total Adjustment',v:(v.permanentdiff+v.temporarydiff>=0?'+':'')+fmtNum(v.permanentdiff+v.temporarydiff,1)+'M'}],
+      note:{type:'info', text: 'Permanent differences (seperti municipal bond interest atau goodwill impairment non-deductible) MEMPENGARUHI effective tax rate secara PERMANEN dan tidak pernah "membalik". Temporary differences (seperti depresiasi atau provisi yang belum direalisasi) HANYA menggeser TIMING pengakuan pajak — akan terbalik dan menciptakan deferred tax asset/liability, bukan mempengaruhi total pajak yang dibayar sepanjang umur aset.'},
+      chart:{xMin:-50,xMax:50,yMin:Math.min(...pts.map(p=>p.y))-10,yMax:Math.max(...pts.map(p=>p.y))+10,vline:v.temporarydiff,hlines:[{y:v.bookincome2,color:COLORS.faint,dash:true}],series:[{label:'Taxable Income vs Temporary Difference',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'nolutilization',ch:10,year:2017,who:'Tax Cuts and Jobs Act (TCJA) 2017',name:'NOL Utilization Limit (Post-TCJA)',
+  desc:'Pasca Tax Cuts and Jobs Act 2017, NOL yang timbul setelah 2017 hanya bisa MENGURANGI maksimum 80% dari taxable income tahun berjalan (tidak bisa 100% seperti aturan lama) — perubahan ini signifikan untuk perencanaan pajak perusahaan dengan NOL besar.',
+  tex:'\\text{Max NOL Usable}=\\text{Taxable Income (pre-NOL)}\\times 80\\%',
+  vars:[
+    {k:'taxableincomepreNOL',label:'Taxable Income (sebelum NOL)',min:50,max:500,step:10,def:200,unit:'$M'},
+    {k:'nolavailable',label:'NOL Carryforward Tersedia',min:50,max:800,step:25,def:300,unit:'$M'}
+  ],
+  calc(v){
+    const maxUsable = v.taxableincomepreNOL*0.8;
+    const actualUsed = Math.min(maxUsable, v.nolavailable);
+    const finalTaxableIncome = v.taxableincomepreNOL-actualUsed;
+    const remainingNOL = v.nolavailable-actualUsed;
+    const pts = sweep(50,800,60,nol=>v.taxableincomepreNOL-Math.min(maxUsable,nol));
+    return {
+      big:fmtNum(finalTaxableIncome,2),bigUnit:'$M',bigLabel:'Taxable Income Setelah NOL',
+      subs:[{l:'NOL Terpakai',v:'$'+fmtNum(actualUsed,1)+'M'},{l:'NOL Tersisa (carryforward)',v:'$'+fmtNum(remainingNOL,1)+'M'}],
+      note:{type: v.nolavailable>maxUsable?'info':'good', text: v.nolavailable>maxUsable?'NOL tersedia LEBIH BESAR dari limit 80%: meski perusahaan punya NOL besar, TIDAK BISA menghilangkan pajak sepenuhnya tahun ini — minimal 20% taxable income akan tetap dikenai pajak, sisanya carryforward ke tahun berikutnya (NOL post-2017 tidak punya batas waktu expiry, beda dari aturan lama).':'NOL tersedia cukup untuk dipakai penuh tanpa terkena limitasi 80% — seluruh NOL termanfaatkan tahun ini.'},
+      chart:{xMin:50,xMax:800,yMin:0,yMax:v.taxableincomepreNOL*1.05,vline:v.nolavailable,hlines:[{y:v.taxableincomepreNOL*0.2,color:COLORS.amber,dash:true}],series:[{label:'Taxable Income vs NOL Available',color:COLORS.amber,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 11: INVENTORY & COGS METHODS (6) ===================== */
+addF([
+{
+  id:'fifolifocompare',ch:11,year:1930,who:'Praktik Akuntansi Inventory Klasik',name:'FIFO vs LIFO COGS Comparison',
+  desc:'Dua metode costing inventory yang menghasilkan COGS dan ending inventory BERBEDA saat harga berubah — FIFO (First-In-First-Out) menjual unit TERLAMA dulu, LIFO (Last-In-First-Out) menjual unit TERBARU dulu. Pilihan ini berdampak besar ke laba dan pajak saat inflasi.',
+  tex:'\\text{FIFO: jual unit lama dulu}\\quad\\text{LIFO: jual unit baru dulu}',
+  vars:[
+    {k:'oldunits',label:'Unit Lama (harga rendah)',min:50,max:300,step:10,def:100,unit:' unit @ $10'},
+    {k:'newunits',label:'Unit Baru (harga tinggi)',min:50,max:300,step:10,def:150,unit:' unit @ $15'},
+    {k:'unitssold',label:'Unit Terjual',min:50,max:400,step:10,def:200,unit:' unit'}
+  ],
+  calc(v){
+    const oldPrice=10, newPrice=15;
+    // FIFO: sell old units first
+    let fifoCogs=0, remaining=v.unitssold;
+    const takeOld = Math.min(v.oldunits, remaining);
+    fifoCogs += takeOld*oldPrice; remaining -= takeOld;
+    const takeNewFifo = Math.min(v.newunits, remaining);
+    fifoCogs += takeNewFifo*newPrice; remaining -= takeNewFifo;
+    // LIFO: sell new units first
+    let lifoCogs=0, remaining2=v.unitssold;
+    const takeNewLifo = Math.min(v.newunits, remaining2);
+    lifoCogs += takeNewLifo*newPrice; remaining2 -= takeNewLifo;
+    const takeOldLifo = Math.min(v.oldunits, remaining2);
+    lifoCogs += takeOldLifo*oldPrice; remaining2 -= takeOldLifo;
+
+    const cogsGap = lifoCogs-fifoCogs;
+    const pts = sweep(50,400,60,us=>{
+      let f=0,r=us;
+      const t1=Math.min(v.oldunits,r); f+=t1*oldPrice; r-=t1;
+      const t2=Math.min(v.newunits,r); f+=t2*newPrice; r-=t2;
+      return f;
+    });
+    return {
+      big:fmtNum(fifoCogs,0),bigUnit:'',bigLabel:'FIFO COGS ($)',
+      subs:[{l:'LIFO COGS',v:'$'+fmtNum(lifoCogs,0)},{l:'Gap (LIFO-FIFO)',v:'$'+fmtNum(cogsGap,0)}],
+      note:{type: cogsGap>0?'info':'info', text: cogsGap>0?'Dalam kondisi harga NAIK (inflasi): LIFO menghasilkan COGS LEBIH TINGGI (memakai harga unit terbaru yang lebih mahal) → Net Income LEBIH RENDAH → Pajak LEBIH RENDAH. Inilah mengapa banyak perusahaan AS memilih LIFO untuk tujuan pajak meski tidak diizinkan di IFRS (standar internasional melarang LIFO sepenuhnya).':'Saat harga TURUN (deflasi), efeknya berbalik: LIFO akan menghasilkan COGS lebih rendah, FIFO lebih tinggi — arah dampak pajak juga ikut berbalik.'},
+      chart:{xMin:50,xMax:400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.unitssold,series:[{label:'FIFO COGS vs Unit Terjual',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'weightedavgcost',ch:11,year:1930,who:'Praktik Akuntansi Inventory Klasik',name:'Weighted Average Cost Method',
+  desc:'Metode costing yang "meratakan" seluruh harga pembelian inventory menjadi satu cost rata-rata tertimbang — menghasilkan COGS yang berada DI ANTARA hasil FIFO dan LIFO, memberikan smoothing terhadap volatilitas harga purchase.',
+  tex:'\\text{Avg Cost}=\\frac{\\text{Total Cost of Goods Available}}{\\text{Total Units Available}}',
+  vars:[
+    {k:'batch1units',label:'Batch 1 — Unit',min:20,max:200,step:10,def:100,unit:' unit'},
+    {k:'batch1price',label:'Batch 1 — Harga per Unit',min:5,max:50,step:1,def:10,unit:'$'},
+    {k:'batch2units',label:'Batch 2 — Unit',min:20,max:200,step:10,def:150,unit:' unit'},
+    {k:'batch2price',label:'Batch 2 — Harga per Unit',min:5,max:60,step:1,def:15,unit:'$'},
+    {k:'unitssold2',label:'Unit Terjual',min:20,max:300,step:10,def:200,unit:' unit'}
+  ],
+  calc(v){
+    const totalUnits = v.batch1units+v.batch2units;
+    const totalCost = v.batch1units*v.batch1price+v.batch2units*v.batch2price;
+    const avgCost = totalCost/totalUnits;
+    const cogs = avgCost*v.unitssold2;
+    const endingInvUnits = totalUnits-v.unitssold2;
+    const endingInvValue = endingInvUnits*avgCost;
+    const pts = sweep(20,300,60,us=>avgCost*us);
+    return {
+      big:fmtNum(avgCost,3),bigUnit:'$/unit',bigLabel:'Weighted Average Cost',
+      subs:[{l:'COGS Total',v:'$'+fmtNum(cogs,0)},{l:'Ending Inventory Value',v:'$'+fmtNum(endingInvValue,0)+' ('+fmtNum(endingInvUnits,0)+' unit)'}],
+      note:{type: endingInvUnits<0?'danger':'info', text: endingInvUnits<0?'Unit terjual MELEBIHI total unit tersedia — periksa kembali input, kondisi ini tidak mungkin terjadi dalam praktik akuntansi normal.':'Weighted average method sering dipilih perusahaan untuk inventory yang sulit dibedakan secara fisik (seperti komoditas curah, bahan kimia, BBM) — di mana melacak unit individual secara FIFO/LIFO tidak praktis secara operasional.'},
+      chart:{xMin:20,xMax:300,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.unitssold2,series:[{label:'COGS vs Unit Terjual (Weighted Avg)',color:COLORS.green,pts}]}
+    };
+  }
+},
+{
+  id:'lifo_reserve',ch:11,year:1970,who:'Praktik Analisis Keuangan (LIFO-to-FIFO Conversion)',name:'LIFO Reserve (Konversi ke FIFO)',
+  desc:'Selisih antara nilai inventory di bawah FIFO dan LIFO — analis MENAMBAHKAN kembali LIFO reserve ini untuk membandingkan perusahaan yang pakai LIFO dengan yang pakai FIFO secara apple-to-apple, terutama penting untuk rasio likuiditas dan ROA.',
+  tex:'\\text{LIFO Reserve}=\\text{FIFO Inventory}-\\text{LIFO Inventory}',
+  vars:[
+    {k:'fifoinv',label:'Inventory Value (FIFO basis)',min:50,max:800,step:25,def:400,unit:'$M'},
+    {k:'lifoinv',label:'Inventory Value (LIFO basis, dilaporkan)',min:30,max:700,step:25,def:280,unit:'$M'},
+    {k:'taxrate8',label:'Tax Rate',min:10,max:35,step:1,def:25,unit:'%'}
+  ],
+  calc(v){
+    const lifoReserve = v.fifoinv-v.lifoinv;
+    const adjustedTaxLiability = lifoReserve*v.taxrate8/100;
+    const adjustedEquity = lifoReserve*(1-v.taxrate8/100);
+    const pts = sweep(30,700,60,li=>v.fifoinv-li);
+    return {
+      big:fmtNum(lifoReserve,1),bigUnit:'$M',bigLabel:'LIFO Reserve',
+      subs:[{l:'Implied Deferred Tax Liability',v:'$'+fmtNum(adjustedTaxLiability,1)+'M'},{l:'Implied Adjustment to Equity (after-tax)',v:'$'+fmtNum(adjustedEquity,1)+'M'}],
+      note:{type: lifoReserve/v.lifoinv>0.3?'warn':'info', text: lifoReserve/v.lifoinv>0.3?'LIFO Reserve BESAR relatif terhadap LIFO inventory (>30%): perusahaan ini sudah memakai LIFO cukup lama dengan inflasi harga kumulatif signifikan — analis HARUS menyesuaikan (tambahkan reserve kembali) untuk perbandingan rasio likuiditas/ROA yang adil dengan peer FIFO.':'Untuk analisis yang akurat: Current Ratio dan Total Asset perusahaan LIFO harus disesuaikan menambahkan LIFO Reserve untuk perbandingan apple-to-apple dengan kompetitor yang memakai FIFO.'},
+      chart:{xMin:30,xMax:700,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.lifoinv,series:[{label:'LIFO Reserve vs LIFO Inventory',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'lifoliquidation',ch:11,year:1970,who:'Praktik Analisis Earnings Quality',name:'LIFO Liquidation Profit Distortion',
+  desc:'Terjadi saat perusahaan LIFO menjual lebih banyak unit dari yang dibeli tahun ini, "menembus" ke layer inventory LAMA dengan harga rendah — menciptakan GROSS MARGIN ARTIFISIAL TINGGI yang TIDAK akan berulang, sering jadi red flag earnings quality.',
+  tex:'\\text{LIFO Liquidation Profit}=(\\text{Current Cost}-\\text{Old LIFO Layer Cost})\\times \\text{Units Liquidated}',
+  vars:[
+    {k:'currentcost',label:'Harga Saat Ini per Unit',min:10,max:80,step:1,def:35,unit:'$'},
+    {k:'oldlayercost',label:'Harga Layer LIFO Lama per Unit',min:5,max:50,step:1,def:12,unit:'$'},
+    {k:'unitsliquidated',label:'Unit yang "Menembus" Layer Lama',min:5,max:200,step:5,def:40,unit:' unit'}
+  ],
+  calc(v){
+    const liquidationProfit = (v.currentcost-v.oldlayercost)*v.unitsliquidated;
+    const pts = sweep(5,200,60,ul=>(v.currentcost-v.oldlayercost)*ul);
+    return {
+      big:fmtNum(liquidationProfit,0),bigUnit:'',bigLabel:'LIFO Liquidation Profit (Artifisial)',
+      subs:[{l:'Margin per Unit dari Layer Lama',v:'$'+fmtNum(v.currentcost-v.oldlayercost,2)},{l:'Unit Terlibat',v:fmtNum(v.unitsliquidated,0)}],
+      note:{type:'danger', text: 'PERINGATAN EARNINGS QUALITY: profit ini muncul HANYA karena inventory fisik berkurang (perusahaan menjual lebih dari yang dibeli ulang) — BUKAN dari operasi bisnis yang membaik. Investor/analis HARUS mengeluarkan (exclude) komponen ini saat menilai sustainable earnings power perusahaan, karena tidak akan berulang kecuali perusahaan terus-menerus mengurangi level inventory-nya.'},
+      chart:{xMin:5,xMax:200,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.unitsliquidated,series:[{label:'Liquidation Profit vs Unit Terlibat',color:COLORS.red,pts}]}
+    };
+  }
+},
+{
+  id:'inventoryturndays',ch:11,year:1900,who:'Praktik Manajemen Operasional',name:'Inventory Turnover & Days of Supply',
+  desc:'Mengukur seberapa cepat inventory "berputar" — dikombinasikan dengan metode costing yang dipilih (FIFO/LIFO/Avg), turnover yang LAMBAT pada periode inflasi tinggi akan memperbesar distorsi antara metode costing yang berbeda.',
+  tex:'\\text{Inventory Turnover}=\\frac{COGS}{\\text{Average Inventory}},\\quad \\text{Days of Supply}=\\frac{365}{\\text{Turnover}}',
+  vars:[
+    {k:'cogs3',label:'COGS Tahunan',min:100,max:1500,step:25,def:600,unit:'$M'},
+    {k:'avginv2',label:'Average Inventory',min:20,max:400,step:10,def:100,unit:'$M'}
+  ],
+  calc(v){
+    const turnover = v.cogs3/v.avginv2;
+    const daysSupply = 365/turnover;
+    const pts = sweep(20,400,60,ai=>v.cogs3/ai);
+    return {
+      big:fmtNum(turnover,2),bigUnit:'x',bigLabel:'Inventory Turnover',
+      subs:[{l:'Days of Supply',v:fmtNum(daysSupply,1)+' hari'},{l:'COGS Tahunan',v:'$'+fmtNum(v.cogs3,0)+'M'}],
+      note:{type: daysSupply>120?'warn':daysSupply<20?'info':'good', text: daysSupply>120?'Days of Supply panjang (>120 hari): jika perusahaan ini memakai LIFO, distorsi antara LIFO dan FIFO COGS akan SEMAKIN BESAR karena inventory "lama" tertahan lebih lama sebelum terjual — perhatikan LIFO Reserve yang kemungkinan signifikan.':daysSupply<20?'Days of Supply sangat singkat (<20 hari): model bisnis just-in-time atau perputaran sangat cepat — perbedaan antara metode costing FIFO/LIFO/Average menjadi RELATIF KECIL karena inventory tidak tertahan lama.':'Turnover berada di rentang yang umum untuk kebanyakan industri manufaktur/retail.'},
+      chart:{xMin:20,xMax:400,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.avginv2,series:[{label:'Inventory Turnover vs Average Inventory',color:COLORS.amber,pts}]}
+    };
+  }
+}
+]);
+
+/* ===================== BAB 12: SEGMENT REPORTING & CONSOLIDATION (6) ===================== */
+addF([
+{
+  id:'segmentmargin',ch:12,year:1997,who:'FASB SFAS 131 (modern: ASC 280)',name:'Segment Operating Margin Comparison',
+  desc:'Perusahaan multi-segmen WAJIB melaporkan profitabilitas per segmen bisnis — membandingkan margin antar segmen mengungkap mana yang benar-benar menggerakkan value, dan bisa mengindikasikan kandidat divestasi jika ada segmen yang terus underperform.',
+  tex:'\\text{Segment Margin}=\\frac{\\text{Segment Operating Income}}{\\text{Segment Revenue}}',
+  vars:[
+    {k:'segArevenue',label:'Segmen A — Revenue',min:50,max:1000,step:25,def:500,unit:'$M'},
+    {k:'segAopinc',label:'Segmen A — Operating Income',min:0,max:300,step:5,def:80,unit:'$M'},
+    {k:'segBrevenue',label:'Segmen B — Revenue',min:50,max:1000,step:25,def:300,unit:'$M'},
+    {k:'segBopinc',label:'Segmen B — Operating Income',min:-50,max:200,step:5,def:20,unit:'$M'}
+  ],
+  calc(v){
+    const marginA = v.segAopinc/v.segArevenue*100;
+    const marginB = v.segBopinc/v.segBrevenue*100;
+    const totalRevenue = v.segArevenue+v.segBrevenue;
+    const blendedMargin = (v.segAopinc+v.segBopinc)/totalRevenue*100;
+    const pts = sweep(50,1000,60,rb=>v.segBopinc/rb*100);
+    return {
+      big:fmtNum(marginA,2),bigUnit:'%',bigLabel:'Segmen A — Operating Margin',
+      subs:[{l:'Segmen B Margin',v:fmtNum(marginB,2)+'%'},{l:'Blended Margin',v:fmtNum(blendedMargin,2)+'%'}],
+      note:{type: marginB<0?'danger':Math.abs(marginA-marginB)>15?'warn':'info', text: marginB<0?'Segmen B beroperasi RUGI (margin negatif) — pertanyaan strategis: apakah ada sinergi/cross-selling yang membenarkan menahan segmen ini, atau lebih baik didivestasi untuk fokus ke segmen yang profitable?':Math.abs(marginA-marginB)>15?'Gap margin BESAR antar segmen (>15pp): perusahaan ini secara efektif adalah "dua bisnis berbeda" yang digabung — pertimbangkan Sum-of-the-Parts valuation (Bab 2) terpisah untuk masing-masing segmen.':'Margin antar segmen relatif sebanding — model bisnis terintegrasi dengan baik tanpa disparitas profitabilitas ekstrem.'},
+      chart:{xMin:50,xMax:1000,yMin:Math.min(...pts.map(p=>p.y))-5,yMax:Math.max(...pts.map(p=>p.y))+5,vline:v.segBrevenue,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Segmen B Margin vs Revenue',color:COLORS.amber,pts}]}
+    };
+  }
+},
+{
+  id:'noncontrolling',ch:12,year:2009,who:'FASB ASC 810 (Non-Controlling Interest)',name:'Non-Controlling Interest (Minority Interest)',
+  desc:'Saat perusahaan mengonsolidasi anak usaha yang TIDAK dimiliki 100%, porsi laba/aset yang menjadi hak pemegang saham minoritas (non-controlling) harus dipisahkan dari hak pemegang saham induk (parent) — krusial untuk menghitung EPS yang benar.',
+  tex:'\\text{NCI Share}=\\text{Subsidiary NI}\\times(1-\\text{Parent Ownership \\%})',
+  vars:[
+    {k:'subsidiaryNI',label:'Net Income Anak Usaha',min:20,max:400,step:10,def:100,unit:'$M'},
+    {k:'parentownership',label:'Kepemilikan Induk',min:51,max:99,step:1,def:75,unit:'%'}
+  ],
+  calc(v){
+    const nciShare = v.subsidiaryNI*(1-v.parentownership/100);
+    const parentShare = v.subsidiaryNI*(v.parentownership/100);
+    const pts = sweep(51,99,60,po=>v.subsidiaryNI*(1-po/100));
+    return {
+      big:fmtNum(nciShare,2),bigUnit:'$M',bigLabel:'NCI Share dari Net Income',
+      subs:[{l:'Parent Share',v:'$'+fmtNum(parentShare,1)+'M'},{l:'Total Subsidiary NI',v:'$'+fmtNum(v.subsidiaryNI,1)+'M'}],
+      note:{type:'info', text: 'Consolidated Income Statement menampilkan 100% revenue/expense anak usaha (meski hanya dimiliki sebagian), lalu MENGURANGKAN NCI Share di baris bawah sebelum sampai ke "Net Income Attributable to Parent" — inilah angka yang relevan untuk menghitung EPS (lihat Bab 5), BUKAN total consolidated net income.'},
+      chart:{xMin:51,xMax:99,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.parentownership,series:[{label:'NCI Share vs % Kepemilikan Induk',color:COLORS.cyan,pts}]}
+    };
+  }
+},
+{
+  id:'intercompanyelim',ch:12,year:1959,who:'Praktik Konsolidasi Akuntansi (ARB 51, modern ASC 810)',name:'Intercompany Elimination (Consolidated Revenue)',
+  desc:'Saat mengonsolidasi laporan keuangan parent dan subsidiary, transaksi ANTAR ENTITAS dalam grup yang sama (intercompany sales) HARUS dieliminasi — tanpa ini, revenue akan "digandakan" secara artifisial dari transaksi internal grup.',
+  tex:'\\text{Consolidated Revenue}=\\text{Parent Revenue}+\\text{Sub Revenue}-\\text{Intercompany Sales}',
+  vars:[
+    {k:'parentrevenue2',label:'Parent Revenue (standalone)',min:200,max:2000,step:50,def:800,unit:'$M'},
+    {k:'subrevenue2',label:'Subsidiary Revenue (standalone)',min:50,max:1000,step:25,def:300,unit:'$M'},
+    {k:'icsales',label:'Intercompany Sales (perlu eliminasi)',min:0,max:300,step:10,def:50,unit:'$M'}
+  ],
+  calc(v){
+    const consolidatedRevenue = v.parentrevenue2+v.subrevenue2-v.icsales;
+    const grossRevenue = v.parentrevenue2+v.subrevenue2;
+    const icPct = v.icsales/grossRevenue*100;
+    const pts = sweep(0,300,60,ic=>v.parentrevenue2+v.subrevenue2-ic);
+    return {
+      big:fmtNum(consolidatedRevenue,1),bigUnit:'$M',bigLabel:'Consolidated Revenue',
+      subs:[{l:'Gross Revenue (sebelum eliminasi)',v:'$'+fmtNum(grossRevenue,1)+'M'},{l:'IC Sales sebagai % Gross',v:fmtNum(icPct,1)+'%'}],
+      note:{type: icPct>15?'warn':'info', text: icPct>15?'Intercompany sales menyumbang porsi SIGNIFIKAN (>15%) dari gross revenue: struktur grup ini punya integrasi vertikal/horizontal yang erat antar entitas — pastikan SEMUA transaksi IC (termasuk biaya, dividen, dan piutang/utang antar grup) dieliminasi konsisten, tidak hanya revenue.':'Eliminasi intercompany WAJIB dilakukan untuk SEMUA transaksi antar entitas dalam grup — revenue, COGS, receivables/payables, dan unrealized profit dalam inventory antar grup — bukan cuma revenue saja.'},
+      chart:{xMin:0,xMax:300,yMin:0,yMax:grossRevenue*1.05,vline:v.icsales,series:[{label:'Consolidated Revenue vs IC Sales',color:COLORS.violet,pts}]}
+    };
+  }
+},
+{
+  id:'equitymethod',ch:12,year:1971,who:'APB Opinion No. 18 (modern: ASC 323)',name:'Equity Method Investment (20-50% Ownership)',
+  desc:'Untuk investasi dengan "significant influence" (umumnya 20-50% kepemilikan, TANPA kontrol penuh), investor TIDAK mengonsolidasikan investee — sebaliknya, mengakui PORSI laba investee secara proporsional sebagai "equity income" di income statement.',
+  tex:'\\text{Equity Income}=\\text{Investee Net Income}\\times \\text{Ownership \\%}',
+  vars:[
+    {k:'investeeNI',label:'Net Income Investee',min:20,max:500,step:10,def:150,unit:'$M'},
+    {k:'ownershippct3',label:'Persentase Kepemilikan',min:20,max:50,step:1,def:30,unit:'%'}
+  ],
+  calc(v){
+    const equityIncome = v.investeeNI*(v.ownershippct3/100);
+    const pts = sweep(20,50,60,op=>v.investeeNI*(op/100));
+    return {
+      big:fmtNum(equityIncome,2),bigUnit:'$M',bigLabel:'Equity Method Income',
+      subs:[{l:'Investee Net Income',v:'$'+fmtNum(v.investeeNI,1)+'M'},{l:'Ownership %',v:fmtNum(v.ownershippct3,1)+'%'}],
+      note:{type:'info', text: 'Equity method BERBEDA dari konsolidasi: hanya SATU baris "equity income" yang muncul di income statement (bukan full revenue/expense investee), dan investment dicatat di balance sheet sebagai SATU akun aset (bukan line-by-line aset/liability investee). Carrying value investment juga di-ADJUST setiap periode: naik dengan equity income yang diakui, turun dengan dividen yang diterima dari investee.'},
+      chart:{xMin:20,xMax:50,yMin:0,yMax:Math.max(...pts.map(p=>p.y))*1.1,vline:v.ownershippct3,series:[{label:'Equity Income vs Ownership %',color:COLORS.teal,pts}]}
+    };
+  }
+},
+{
+  id:'purchasepriceallocation',ch:12,year:2001,who:'FASB SFAS 141/142 (modern: ASC 805)',name:'Purchase Price Allocation (PPA) — Goodwill',
+  desc:'Saat akuisisi, harga beli HARUS dialokasikan ke fair value aset/liability yang diidentifikasi (termasuk intangibles seperti brand, customer relationships, paten) — SISA yang tidak bisa dialokasikan menjadi GOODWILL, mencerminkan nilai "tak terukur" seperti sinergi dan human capital.',
+  tex:'\\text{Goodwill}=\\text{Purchase Price}-\\text{Fair Value of Identifiable Net Assets}',
+  vars:[
+    {k:'purchaseprice4',label:'Purchase Price (total konsiderasi)',min:100,max:2000,step:25,def:600,unit:'$M'},
+    {k:'fairvaluenetassets',label:'Fair Value Net Assets (identifiable)',min:50,max:1800,step:25,def:450,unit:'$M'}
+  ],
+  calc(v){
+    const goodwill = v.purchaseprice4-v.fairvaluenetassets;
+    const isBargain = goodwill<0;
+    const pts = sweep(50,1800,60,fv=>v.purchaseprice4-fv);
+    return {
+      big: isBargain? '+'+fmtNum(-goodwill,1) : fmtNum(goodwill,1),bigUnit:'$M',bigLabel: isBargain?'Bargain Purchase Gain':'Goodwill',
+      subs:[{l:'Purchase Price',v:'$'+fmtNum(v.purchaseprice4,1)+'M'},{l:'Fair Value Net Assets',v:'$'+fmtNum(v.fairvaluenetassets,1)+'M'}],
+      note:{type: isBargain?'warn':goodwill/v.purchaseprice4>0.5?'warn':'info', text: isBargain?'BARGAIN PURCHASE GAIN (kasus jarang): fair value net assets MELEBIHI purchase price — akuntansi mewajibkan pengakuan GAIN ini langsung ke income statement, tapi situasi ini sering memicu pertanyaan apakah valuasi fair value-nya benar-benar akurat, atau ada motivasi distressed-sale dari penjual.':goodwill/v.purchaseprice4>0.5?'Goodwill menyumbang PORSI BESAR (>50%) dari purchase price: acquirer membayar premium besar untuk faktor "tak terukur" (brand, sinergi, talent) — risiko impairment di masa depan (Bab 7) lebih tinggi jika ekspektasi sinergi tidak terealisasi.':'Alokasi antara identifiable net assets dan goodwill berada di proporsi yang umum untuk transaksi M&A strategis.'},
+      chart:{xMin:50,xMax:1800,yMin:Math.min(...pts.map(p=>p.y))-20,yMax:Math.max(...pts.map(p=>p.y))+20,vline:v.fairvaluenetassets,hlines:[{y:0,color:COLORS.faint,dash:true}],series:[{label:'Goodwill vs Fair Value Net Assets',color:COLORS.red,pts}]}
+    };
+  }
+}
+]);
+
 
 /* =========================================================
    QUANT CODEX — UI ENGINE
@@ -2324,9 +2698,9 @@ let activeId=null, currentSeed=(Date.now()&0xffffff), chartInst=null, searchQ=''
 
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function chColorKey(ch){return ({1:'amber',2:'red',3:'green',4:'cyan',5:'violet',6:'teal',7:'orange',8:'sky',9:'rose'})[ch]||'amber';}
+function chColorKey(ch){return ({1:'amber',2:'red',3:'green',4:'cyan',5:'violet',6:'teal',7:'orange',8:'sky',9:'rose',10:'lime',11:'indigo',12:'gold'})[ch]||'amber';}
 function chColor(ch){return COLORS[chColorKey(ch)];}
-function chIcon(ch){return ({1:'💎',2:'⚡',3:'📊',4:'🌍',5:'🔮',6:'🏦',7:'🤝',8:'📋',9:'📈'})[ch]||'•';}
+function chIcon(ch){return ({1:'💎',2:'⚡',3:'📊',4:'🌍',5:'🔮',6:'🏦',7:'🤝',8:'📋',9:'📈',10:'🧾',11:'📦',12:'🧩'})[ch]||'•';}
 
 /* ---------- ticker ---------- */
 function buildTicker(){
@@ -2378,7 +2752,7 @@ $('searchInput').addEventListener('input',e=>{
 function renderWelcome(){
   $('main').innerHTML=`
     <div class="intro-card">
-      <b>📊 Selamat datang di Wall Street Codex.</b> Perpustakaan interaktif berisi <b>${FORMULAS.length} rumus</b> accounting, valuation, dan corporate finance dari tahun 1896–2019, terbagi dalam 9 bab.
+      <b>📊 Selamat datang di Wall Street Codex.</b> Perpustakaan interaktif berisi <b>${FORMULAS.length} rumus</b> accounting, valuation, dan corporate finance dari tahun 1896–2019, terbagi dalam 12 bab.
       Pilih rumus dari daftar di samping (atau dari ticker berjalan di atas), lalu geser parameter untuk melihat hasil kalkulasi dan grafik bergerak secara real-time.
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;">
